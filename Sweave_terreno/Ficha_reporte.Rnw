@@ -9,6 +9,8 @@ library(sp)
 library(raster)
 library(automap)
 library(xtable)
+library(ggmap)
+library(sp)
 
 wb <- loadWorkbook("/Users/aldotapia/Desktop/Proyectos/rating_curve/Data/Sheets/Altura_0.31 m/FID 0_14-11_A1_0,31.xlsx")
   
@@ -16,6 +18,8 @@ wb <- loadWorkbook("/Users/aldotapia/Desktop/Proyectos/rating_curve/Data/Sheets/
 hoja_c <- readWorksheet(wb,sheet = 'Cálculo Aforo',colTypes = XLC$DATA_TYPE.STRING,forceConversion = T)
   
 hoja <- readWorksheet(wb,sheet = 'Cálculo Aforo',colTypes = XLC$DATA_TYPE.NUMERIC,forceConversion = T)
+
+hoja_h <- readWorksheet(wb,sheet = 'Hidráulica',colTypes = XLC$DATA_TYPE.STRING,forceConversion = T)
 
 ix <- hoja[22,2]
 
@@ -157,7 +161,7 @@ headerColorOne=prommra_dark, % Background color for the header in the content bo
 headerColorTwo=prommra_light, % Background color for the header in the content boxes (right side)
 headerFontColor=white, % Text color for the header text in the content boxes
 boxColorOne=white, % Background color of the content boxes
-textborder=roundedleft, % Format of the border around content boxes, can be: none, bars, coils, triangles, rectangle, rounded, roundedsmall, roundedright or faded
+textborder=rectangle, % Format of the border around content boxes, can be: none, bars, coils, triangles, rectangle, rounded, roundedsmall, roundedright or faded
 eyecatcher=true, % Set to false for ignoring the left logo in the title and move the title left
 headerheight=0.1\textheight, % Height of the header
 headershape=rectangle, % Specify the rounded corner in the content box headers, can be: rectangle, small-rounded, roundedright, roundedleft or rounded
@@ -171,8 +175,40 @@ linewidth=2pt % Width of the border lines around content boxes
 %
 {\includegraphics[height=4em,keepaspectratio]{logo.png}} % First university/lab logo on the left
 {\bf\textsc{\huge{Resumen de aforo: \Sexpr{channel_name}}}\vspace{0.1em}} % Poster title
-{\textsc{\normalsize{\Sexpr{user}} \\ \footnotesize{\Sexpr{institution}}}} % Author names and institution
+{\textsc{\normalsize{\Sexpr{institution}}}} % Author  institution
 {\includegraphics[height=4em,keepaspectratio]{logo.png}} % Second university/lab logo on the right
+
+
+
+%----------------------------------------------------------------------------------------
+%	hidraulica
+%----------------------------------------------------------------------------------------
+
+\headerbox{Hidráulica}{name=hidraulica,column=0,above=bottom}{
+
+
+\centering
+\begin{tabular}{lc}
+\hline
+Parámetro                  & Valor \\
+\hline
+Área ($A$)                   & \Sexpr{round(as.numeric(hoja_h[8,9]),2)} m\textsuperscript{2}     \\
+Perímetro mojado ($P$)       & \Sexpr{round(as.numeric(hoja_h[9,9]),2)} m     \\
+Perímetro                  & \Sexpr{round(as.numeric(hoja_h[10,9]),2)} m     \\
+Radio hidráulico ($R$)       & \Sexpr{round(as.numeric(hoja_h[11,9]),2)} m     \\
+Ancho superior ($T$)         & \Sexpr{round(as.numeric(hoja_h[12,9]),2)} m     \\
+Profundidad hidráulica ($D$) & \Sexpr{round(as.numeric(hoja_h[13,9]),2)} m     \\
+Número de Froude ($F_R$)      & \Sexpr{round(as.numeric(hoja_h[14,9]),2)}     \\
+Régimen de flujo           & \Sexpr{hoja_h[15,9]}     \\
+Temperatura                & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',round(as.numeric(hoja_h[8,14]),2))} ºC     \\
+Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',round(as.numeric(hoja_h[9,14]),2))}     \\
+\hline
+\end{tabular}
+
+
+}
+
+
 
 %----------------------------------------------------------------------------------------
 %	Información general
@@ -191,37 +227,45 @@ linewidth=2pt % Width of the border lines around content boxes
 \textbf{Observaciones: } \Sexpr{ifelse(is.na(hoja_c[13,3]),'nd',hoja_c[13,3])}\\
 \textbf{Test de giro: } \Sexpr{ifelse(is.na(hoja_c[14,3]),'nd',paste0(as.numeric(hoja_c[14,3]),' seg'))}\\
 
+\vfill
+
+\scriptsize{\textbf{nd:} no hay datos ingresados para este parámetro}
+
 \vspace{0.3em} % When there are two boxes, some whitespace may need to be added if the one on the right has more content
 }
 
+
 %----------------------------------------------------------------------------------------
-%	INTRODUCTION
+%	Caudal
 %----------------------------------------------------------------------------------------
 
-\headerbox{Introduction}{name=introduction,column=0,above=bottom}{
+\headerbox{Caudal}{name=caudal,column=0,below=info,boxColorOne = prommra_light}{
 
-Aliquam non lacus dolor, \textit{a aliquam quam}. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nulla in nibh mauris. Donec vel ligula nisi, a lacinia arcu. Sed mi dui, malesuada vel consectetur et, egestas porta nisi. Sed eleifend pharetra dolor, et dapibus est vulputate eu. \textbf{Integer faucibus elementum felis vitae fringilla.} In hac habitasse platea dictumst. Duis tristique rutrum nisl, nec vulputate elit porta ut. Donec sodales sollicitudin turpis sed convallis. Etiam mauris ligula, blandit adipiscing condimentum eu, dapibus pellentesque risus.
+\centering{\textbf{\color{white}\Huge{\Sexpr{hoja_c[21,22]} l/s}}}\\
+
 }
 
 %----------------------------------------------------------------------------------------
 %	Detalle de la medición
 %----------------------------------------------------------------------------------------
 
-\headerbox{Detalle de la medición}{name=detalle,column=1,row=0,span=3}{
+\headerbox{Detalle de la medición}{name=detalle,column=1,span=3,row=0}{
+
 
 <<echo=F, results=tex>>=
 print(xtable(datos2,options(xtable.comment = FALSE)),type="latex",floating="F",include.rownames=F)
 @
 
-
+\scriptsize{\textbf{Vert:} posición en la vertical (m); \textbf{Prof:} profundidad de la vertical (m); \textbf{h0.2:} profundidad a 0.2h (m); \textbf{h0.6:} profundidad a 0.6h (m); \textbf{h0.8:} profundidad a 0.8h (m); \textbf{r0.2a:} 1era repetición de velocidad a la profundidad 0.2h (m/s); \textbf{r0.2b:} 2da repetición de velocidad a la profundidad 0.2h (m/s) \textbf{r0.2c:} 3era repetición de velocidad a la profundidad 0.2h (m/s); \textbf{r0.6a:} 1era repetición de velocidad a la profundidad 0.6h (m/s); \textbf{r0.6b:} 2da repetición de velocidad a la profundidad 0.6h (m/s) \textbf{r0.6c:}; 3era repetición de velocidad a la profundidad 0.6h (m/s); \textbf{r0.8a:} 1era repetición de velocidad a la profundidad 0.8h (m/s); \textbf{r0.8b:} 2da repetición de velocidad a la profundidad 0.8h (m/s); \textbf{r0.8c:} 3era repetición de velocidad a la profundidad 0.8h (m/s); \textbf{v0.2:} velocidad media a la profundidad 0.2h (m/s); \textbf{v0.6:} velocidad media a la profundidad 0.6h (m/s); \textbf{v0.8:} velocidad media a la profundidad 0.8h (m/s); \textbf{vm:} velocidad media de la vertical (m/s); \textbf{qs:} caudal por subsección (m\textsuperscript{3}/s).}
 
 }
+
 
 %----------------------------------------------------------------------------------------
 %	Esquema perfil transversal
 %----------------------------------------------------------------------------------------
 
-\headerbox{Esquema perfil transversal}{name=esquema,column=1,span=2,above=bottom}{
+\headerbox{Esquema perfil transversal}{name=esquema,column=1,span=2,below=detalle}{
 
 \begin{center}
 <<echo=F, fig=T,results=tex,height=4,width=8>>=
@@ -247,33 +291,46 @@ print(xtable(datos2,options(xtable.comment = FALSE)),type="latex",floating="F",i
 
 
 %----------------------------------------------------------------------------------------
-%	Esquema perfil transversal
+%	Ubicación
 %----------------------------------------------------------------------------------------
 
-\headerbox{Ubicación}{name=ubicacion,column=3,span=1,above=bottom}{
+\headerbox{Ubicación}{name=ubicacion,column=3,span=1,aligned=esquema}{
 
 \begin{center}
 <<echo=F, fig=T,results=tex,height=4,width=4>>=
-{plot(x=0,y=0, type = 'n',
-            ylab='Profundidad (m)',xlab='Ancho (m)',asp=1,xlim=c(0,datos[dim(datos)[1],1]),
-            ylim=c(-maxPro,0),bty='l',usr=c(0,datos[dim(datos)[1],1],-maxPro,0))
-  plot(krg, add=T,
-       col=colorRampPalette(c("#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6"))(100),
-       legend = F,xlim=c(0,datos[dim(datos)[1],1]),
-       ylim=c(-maxPro,0))
-  lines(x=c(0,datos$Vert,datos$Vert[length(datos$Vert)]),y=c(0,-datos$Prof,0), lwd=2)
-  lines(x=c(0,datos$Vert[length(datos$Vert)]),y=c(0,0),col='#08519c',lwd=2)
-  for(i in 2:(ix+1)){
-    lines(x=c(datos[i,1],datos[i,1]),y=c(0,-datos[i,2]),lty=3)
-  }
-  points(db,pch=20)
-  contour(krg,add=T,col='black',lwd=0.3,drawlabels = F)
-  text(db, labels=paste0(round(db@data$z,2),' m/s'), cex= 0.7, pos = 1)}
+pt <- SpatialPoints(matrix(as.numeric(c(hoja_c[10,3],hoja_c[11,3])),nrow = 1), proj4string = CRS('+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '))
+
+pt <- spTransform(pt, CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
+
+gauge_map <- get_map(coordinates(pt), maptype = "satellite", source = "google", zoom = 14)
+
+pt_coo <- as.data.frame(pt@coords)
+names(pt_coo) <- c('x','y')
+
+ggmap(gauge_map) + geom_point(data=pt_coo,aes(x=x,y=y),col='red',size=3)+xlab('Este')+ylab('Norte')
 @
 \end{center}
 
 }
 
+
+%----------------------------------------------------------------------------------------
+%	info extra
+%----------------------------------------------------------------------------------------
+
+\headerbox{Origen}{name=infoextra,column=0,above=hidraulica, below=caudal, row=2}{
+
+\begin{scriptsize}
+
+Los datos presentados en esta ficha provienen de la planilla \textbf{PROMMRA Q-CANAL}, basada en el Instructivo de aforo en canales no revestidos ITC-09 (Comisión Nacional de Riego) para postulaciones a la Ley Nº18.450.\\
+
+Comentarios, dudas o sugerencias: prommra@userena.cl \\
+
+Autor: Aldo Tapia A.\\
+
+\end{scriptsize}
+
+}
 
 
 \end{poster}

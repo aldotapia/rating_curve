@@ -232,3 +232,19 @@ levelplot(r2,at=seq(0, maxValue(r2), length.out=20),margin=F,
 test <- idw(formula = z~1, locations=db,newdata=xy,
             maxdist = Inf)
 mean(test@data$var1.pred)*bbox(r)[1,2]*bbox(r)[2,2]
+
+
+
+library(ggmap)
+library(sp)
+
+pt <- SpatialPoints(matrix(as.numeric(c(hoja_c[10,3],hoja_c[11,3])),nrow = 1), proj4string = CRS('+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '))
+
+pt <- spTransform(pt, CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
+
+gauge_map <- get_map(coordinates(pt), maptype = "satellite", source = "google", zoom = 14)
+
+pt_coo <- as.data.frame(pt@coords)
+names(pt_coo) <- c('x','y')
+
+ggmap(gauge_map) + geom_point(data=pt_coo,aes(x=x,y=y),col='red',size=3)+xlab('Este')+ylab('Norte')
