@@ -5,7 +5,7 @@
 
 channel_name <- 'Canal Churque'
 org <- 'Asociación de Canalistas del Embalse Recoleta'
-archivo <- "/path/to/data.xlsx"
+# archivo <- "/path/to/data.xlsx"
 
 #####
 ## Inicialización
