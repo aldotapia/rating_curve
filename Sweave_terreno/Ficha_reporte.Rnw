@@ -1,7 +1,14 @@
 <<echo=F,results=hide>>=
+#####
+## HEADER
+# Datos a modificar
+
 channel_name <- 'Canal Churque'
-user <- 'Gonzalo Rojas'
-institution <- 'Laboratorio de Prospección, Monitoreo y Modelación de Recursos Agrícolas y Ambientales'
+org <- 'Asociación de Canalistas del Embalse Recoleta'
+# archivo <- "/path/to/data.xlsx"
+
+#####
+## Inicialización
 
 library(XLConnect)
 library(ggplot2)
@@ -11,9 +18,14 @@ library(automap)
 library(xtable)
 library(ggmap)
 library(sp)
+library(RStoolbox)
+library(ggrepel)
+library(ggsn)
 
-wb <- loadWorkbook("/Users/aldotapia/Desktop/Proyectos/rating_curve/Data/Sheets/Altura_0.31 m/FID 0_14-11_A1_0,31.xlsx")
-  
+#####
+## Código
+
+wb <- loadWorkbook(archivo)
 
 hoja_c <- readWorksheet(wb,sheet = 'Cálculo Aforo',colTypes = XLC$DATA_TYPE.STRING,forceConversion = T)
   
@@ -24,12 +36,12 @@ hoja_h <- readWorksheet(wb,sheet = 'Hidráulica',colTypes = XLC$DATA_TYPE.STRING
 ix <- hoja[22,2]
 
 datos <- hoja[27:(27 + (ix)*2 + 2),c(3,4,31:35)]
-datos <- datos[apply(is.na(datos),MARGIN = 1,FUN = sum)<7,]
+datos <- datos[apply(is.na(datos),MARGIN = 1,FUN = sum) < 7,]
 
 names(datos) <- c('Vert','Prof','v0.2','v0.6','v0.8','vm','qs')
 
 datos2 <- hoja[27:(27 + (ix)*2 + 2),c(3,4,13:15,22:35)]
-datos2 <- datos2[apply(is.na(datos2),MARGIN = 1,FUN = sum)<18,]
+datos2 <- datos2[apply(is.na(datos2),MARGIN = 1,FUN = sum) < 18,]
 names(datos2) <- c('Vert','Prof','h0.2','h0.6','h0.8',
                    'r0.2a','r0.2b','r0.2c',
                    'r0.6a','r0.6b','r0.6c',
@@ -38,27 +50,25 @@ names(datos2) <- c('Vert','Prof','h0.2','h0.6','h0.8',
 
 maxPro <- max(datos[,2],na.rm = T)
 
-db <- data.frame(vertical=NA,altura=NA,velocidad=NA)
+db <- data.frame(vertical = NA,altura = NA,velocidad = NA)
 
-for(i in 2:(ix+1)){
+for (i in 2:(ix + 1)) {
   altura_temp <- datos[i,2]
   velocidad_temp <- unlist(datos[i,3:5])
   vertical_temp <- datos[i,1]
   
-  xx <- maxPro-c(altura_temp*0.8,altura_temp*0.4,altura_temp*0.2)
+  xx <- -c(altura_temp*0.2,altura_temp*0.6,altura_temp*0.8)
   yy <- c(velocidad_temp)
   
-  df_temp <- data.frame(vertical=vertical_temp,altura=xx,velocidad=yy)
+  df_temp <- data.frame(vertical = vertical_temp,altura = xx,velocidad = yy)
   
   db <- rbind.data.frame(db,df_temp)
 }
 
 db <- db[complete.cases(db),]
 
-db$altura <- -db$altura
-
-r <- raster(xmn=0,ymn=-maxPro,ymx=0,xmx=datos[dim(datos)[1],1],
-            crs=NA,resolution=min(min(datos[datos[,2]>0,2],na.rm=T),min(datos[datos[,1]>0,1],na.rm=T))/50)
+r <- raster(xmn = 0,ymn = -maxPro,ymx = 0,xmx = datos[dim(datos)[1],1],
+            crs = NA,resolution = min(min(datos[datos[,2] > 0,2],na.rm = T),min(datos[datos[,1] > 0,1],na.rm = T))/50)
 
 poligono <- SpatialPolygons(list(Polygons(list(Polygon(cbind(c(datos[1,1],datos[,1],datos[dim(datos)[1],1],datos[1,1]),c(0,-datos[,2],0,0)))),'p1')))
 
@@ -71,11 +81,9 @@ coordinates(db) <-  ~x+y
 krigging <- autoKrige(z~1,db,xy,block = c(0.01,0.01),verbose = F,
                       model = c('Ste'))
 
-Alturas <- datos$Prof-maxPro
-
 krg <- as(krigging[[1]],'RasterLayer')
 
-krg <- crop(krg,poligono)
+krg <- mask(krg,poligono)
 
 
 
@@ -126,6 +134,8 @@ krg <- crop(krg,poligono)
 \usepackage{enumitem} % Used to reduce itemize/enumerate spacing
 \usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures
 
+
+
 \usepackage{multicol} % Required for multiple columns
 \setlength{\columnsep}{1.5em} % Slightly increase the space between columns
 \setlength{\columnseprule}{0mm} % No horizontal rule between columns
@@ -173,12 +183,12 @@ linewidth=2pt % Width of the border lines around content boxes
 %	TITLE SECTION 
 %----------------------------------------------------------------------------------------
 %
-{\includegraphics[height=4em,keepaspectratio]{logo.png}} % First university/lab logo on the left
+{\includegraphics[height=6em,keepaspectratio]{uls.png}} % First university/lab logo on the left
 {\bf\textsc{\huge{Resumen de aforo: \Sexpr{channel_name}}}\vspace{0.1em}} % Poster title
-{\textsc{\normalsize{\Sexpr{institution}}}} % Author  institution
-{\includegraphics[height=4em,keepaspectratio]{logo.png}} % Second university/lab logo on the right
+{\textsc{\normalsize{\textbf{OUA:}} \Sexpr{org}}\scriptsize{\\ *OUA = Organización de Usuarios de Agua}} % Organización de usuario de aguas
+{\includegraphics[height=4em,keepaspectratio]{prommra.png}} % Second university/lab logo on the right
 
-
+\setkeys{Gin}{width=1\textwidth}
 
 %----------------------------------------------------------------------------------------
 %	hidraulica
@@ -200,7 +210,7 @@ Ancho superior ($T$)         & \Sexpr{round(as.numeric(hoja_h[12,9]),2)} m     \
 Profundidad hidráulica ($D$) & \Sexpr{round(as.numeric(hoja_h[13,9]),2)} m     \\
 Número de Froude ($F_R$)      & \Sexpr{round(as.numeric(hoja_h[14,9]),2)}     \\
 Régimen de flujo           & \Sexpr{hoja_h[15,9]}     \\
-Temperatura                & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',round(as.numeric(hoja_h[8,14]),2))} ºC     \\
+Temperatura                & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',paste0(round(as.numeric(hoja_h[8,14]),2),' ºC'))}      \\
 Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',round(as.numeric(hoja_h[9,14]),2))}     \\
 \hline
 \end{tabular}
@@ -253,7 +263,7 @@ Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',round(a
 
 
 <<echo=F, results=tex>>=
-print(xtable(datos2,options(xtable.comment = FALSE)),type="latex",floating="F",include.rownames=F)
+print(xtable(datos2,options(xtable.comment = FALSE)),type = "latex",floating = "F",include.rownames = F)
 @
 
 \scriptsize{\textbf{Vert:} posición en la vertical (m); \textbf{Prof:} profundidad de la vertical (m); \textbf{h0.2:} profundidad a 0.2h (m); \textbf{h0.6:} profundidad a 0.6h (m); \textbf{h0.8:} profundidad a 0.8h (m); \textbf{r0.2a:} 1era repetición de velocidad a la profundidad 0.2h (m/s); \textbf{r0.2b:} 2da repetición de velocidad a la profundidad 0.2h (m/s) \textbf{r0.2c:} 3era repetición de velocidad a la profundidad 0.2h (m/s); \textbf{r0.6a:} 1era repetición de velocidad a la profundidad 0.6h (m/s); \textbf{r0.6b:} 2da repetición de velocidad a la profundidad 0.6h (m/s) \textbf{r0.6c:}; 3era repetición de velocidad a la profundidad 0.6h (m/s); \textbf{r0.8a:} 1era repetición de velocidad a la profundidad 0.8h (m/s); \textbf{r0.8b:} 2da repetición de velocidad a la profundidad 0.8h (m/s); \textbf{r0.8c:} 3era repetición de velocidad a la profundidad 0.8h (m/s); \textbf{v0.2:} velocidad media a la profundidad 0.2h (m/s); \textbf{v0.6:} velocidad media a la profundidad 0.6h (m/s); \textbf{v0.8:} velocidad media a la profundidad 0.8h (m/s); \textbf{vm:} velocidad media de la vertical (m/s); \textbf{qs:} caudal por subsección (m\textsuperscript{3}/s).}
@@ -268,22 +278,35 @@ print(xtable(datos2,options(xtable.comment = FALSE)),type="latex",floating="F",i
 \headerbox{Esquema perfil transversal}{name=esquema,column=1,span=2,below=detalle}{
 
 \begin{center}
-<<echo=F, fig=T,results=tex,height=4,width=8>>=
-{plot(x=0,y=0, type = 'n',
-            ylab='Profundidad (m)',xlab='Ancho (m)',asp=1,xlim=c(0,datos[dim(datos)[1],1]),
-            ylim=c(-maxPro,0),bty='l',usr=c(0,datos[dim(datos)[1],1],-maxPro,0))
-  plot(krg, add=T,
-       col=colorRampPalette(c("#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6"))(100),
-       legend = F,xlim=c(0,datos[dim(datos)[1],1]),
-       ylim=c(-maxPro,0))
-  lines(x=c(0,datos$Vert,datos$Vert[length(datos$Vert)]),y=c(0,-datos$Prof,0), lwd=2)
-  lines(x=c(0,datos$Vert[length(datos$Vert)]),y=c(0,0),col='#08519c',lwd=2)
-  for(i in 2:(ix+1)){
-    lines(x=c(datos[i,1],datos[i,1]),y=c(0,-datos[i,2]),lty=3)
-  }
-  points(db,pch=20)
-  contour(krg,add=T,col='black',lwd=0.3,drawlabels = F)
-  text(db, labels=paste0(round(db@data$z,2),' m/s'), cex= 0.7, pos = 1)}
+<<echo=F, fig=T,results=tex,height=4.2,width=10>>=
+# {plot(x=0,y=0, type = 'n',
+#             ylab='Profundidad (m)',xlab='Ancho (m)',asp=1,xlim=c(0,datos[dim(datos)[1],1]),
+#             ylim=c(-maxPro,0),bty='l',usr=c(0,datos[dim(datos)[1],1],-maxPro,0))
+#   plot(krg, add=T,
+#        col=colorRampPalette(c("#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6"))(100),
+#        legend = F,xlim=c(0,datos[dim(datos)[1],1]),
+#        ylim=c(-maxPro,0))
+#   lines(x=c(0,datos$Vert,datos$Vert[length(datos$Vert)]),y=c(0,-datos$Prof,0), lwd=2)
+#   lines(x=c(0,datos$Vert[length(datos$Vert)]),y=c(0,0),col='#08519c',lwd=2)
+#   for(i in 2:(ix+1)){
+#     lines(x=c(datos[i,1],datos[i,1]),y=c(0,-datos[i,2]),lty=3)
+#   }
+#   points(db,pch=20)
+#   contour(krg,add=T,col='black',lwd=0.3,drawlabels = F)
+#   text(db, labels=paste0(round(db@data$z,2),' m/s'), cex= 0.7, pos = 1)}
+
+
+
+line1 <- data.frame(x = c(0,datos$Vert,datos$Vert[length(datos$Vert)]),y = c(0,-datos$Prof,0))
+line2 <- data.frame(x = c(0,datos$Vert[length(datos$Vert)]),y = c(0,0))
+krg_df <- as.data.frame(krg,xy = T)
+krg_df <- krg_df[complete.cases(krg_df),]
+names(krg_df)[3] <- 'z'
+
+db_plot <- cbind.data.frame(db@coords,db@data)
+
+ggplot() + geom_raster(data = krg_df,aes(x = x,y = y,fill = z),alpha = NA) + coord_equal() + stat_contour(data = krg_df,aes(x = x,y = y,z = z),color = 'black',size = 0.25) + geom_linerange(data = datos, aes(x = Vert, ymin = -Prof,ymax = 0),linetype = 2) + geom_line(data = line1, aes(x,y),size = 0.75) + geom_line(data = line2, aes(x,y),color = '#08519c') + geom_point(data = db_plot,aes(x,y)) + scale_fill_gradientn(colours = c(c("#f7fbff","#deebf7","#c6dbef","#9ecae1","#6baed6","#4292c6"))) + theme_classic() + theme(legend.position = "none") + geom_text_repel(data = db_plot,aes(x,y, label = round(z,2))) + xlab('Ancho (m)') + ylab('Profundidad (m)')
+
 @
 \end{center}
 
@@ -296,18 +319,30 @@ print(xtable(datos2,options(xtable.comment = FALSE)),type="latex",floating="F",i
 
 \headerbox{Ubicación}{name=ubicacion,column=3,span=1,aligned=esquema}{
 
+\setkeys{Gin}{width=0.9\textwidth}
+
 \begin{center}
 <<echo=F, fig=T,results=tex,height=4,width=4>>=
-pt <- SpatialPoints(matrix(as.numeric(c(hoja_c[10,3],hoja_c[11,3])),nrow = 1), proj4string = CRS('+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '))
 
-pt <- spTransform(pt, CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
+if (sum(is.na(as.numeric(c(hoja_c[10,3],hoja_c[11,3])))) == 0) {
+  pt <- SpatialPoints(matrix(as.numeric(c(hoja_c[10,3],hoja_c[11,3])),nrow = 1), proj4string = CRS('+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '))
 
-gauge_map <- get_map(coordinates(pt), maptype = "satellite", source = "google", zoom = 14)
+  pt <- spTransform(pt, CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
 
-pt_coo <- as.data.frame(pt@coords)
-names(pt_coo) <- c('x','y')
+  gauge_map <- get_map(coordinates(pt), maptype = "satellite", source = "google", zoom = 14)
 
-ggmap(gauge_map) + geom_point(data=pt_coo,aes(x=x,y=y),col='red',size=3)+xlab('Este')+ylab('Norte')
+  pt_coo <- as.data.frame(pt@coords)
+  names(pt_coo) <- c('x','y')
+
+
+  map2 <- ggmap(gauge_map) + geom_point(data = pt_coo,aes(x = x,y = y),col = 'red',size = 3) + xlab('Este') + ylab('Norte')
+
+  north2(map2,0.8,0.8)
+}else{
+  par(mar = c(0,0,0,0))
+  plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+  text(x = 0.5, y = 0.5, paste("Sin coordenadas\n","para determinar\n","ubicación en mapa."), cex = 1.6, col = "black")
+}
 @
 \end{center}
 
