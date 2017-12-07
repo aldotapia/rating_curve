@@ -5,22 +5,24 @@
 
 channel_name <- 'Canal Churque'
 org <- 'Asociación de Canalistas del Embalse Recoleta'
-# archivo <- "/path/to/data.xlsx"
+archivo <- "/path/to/data.xlsx"
 
 #####
 ## Inicialización
 
-library(XLConnect)
-library(ggplot2)
-library(sp)
-library(raster)
-library(automap)
-library(xtable)
-library(ggmap)
-library(sp)
-library(RStoolbox)
-library(ggrepel)
-library(ggsn)
+if (!require("pacman")) install.packages("pacman"); library(pacman)
+pacman::p_load('XLConnect', 'ggplot2', 'sp','raster','automap','xtable','ggmap','sp','RStoolbox','ggrepel','ggsn')
+# library(XLConnect)
+# library(ggplot2)
+# library(sp)
+# library(raster)
+# library(automap)
+# library(xtable)
+# library(ggmap)
+# library(sp)
+# library(RStoolbox)
+# library(ggrepel)
+# library(ggsn)
 
 #####
 ## Código
