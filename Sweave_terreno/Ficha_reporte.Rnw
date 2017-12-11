@@ -3,9 +3,9 @@
 ## HEADER
 # Datos a modificar
 
-channel_name <- 'Canal Churque'
-org <- 'Asociación de Canalistas del Embalse Recoleta'
-archivo <- '~/Desktop/Proyectos/rating_curve/Datos/Planillas de Aforo/FID 0_Entrada Canal El Churque/Altura_0.31 m/FID 0_14-11_A1_0,31.xlsx' # archivo <- "/path/to/data.xlsx"
+channel_name <- 'Canal Ejemplo'
+org <- 'Asociación de Canalistas Ficticia'
+archivo <- '~/Desktop/Proyectos/rating_curve/Data/Sheets/example_sheet.xlsx' # archivo <- "/path/to/data.xlsx"
 
 #####
 ## Inicialización
@@ -231,7 +231,7 @@ Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',formatC
 \headerbox{Información general}{name=info,column=0,row=0}{
 
 \textbf{Localización: } \Sexpr{ifelse(is.na(hoja_c[5,3]),'nd',hoja_c[5,3])}\\
-\textbf{Kilometraje (inicio, término): } \Sexpr{ifelse(is.na(hoja_c[6,3]),'nd',hoja_c[6,3])}\\
+\textbf{Kilometraje: } \Sexpr{ifelse(hoja_c[6,5] == 'No Aplica','No aplica',ifelse(is.na(hoja_c[6,3]),'nd',paste0(as.numeric(hoja_c[6,3]),' (',hoja_c[6,5],')')))}\\
 \textbf{Fecha: } \Sexpr{ifelse(is.na(hoja_c[7,3]),'nd',substr(hoja_c[7,3],1,10))}\\
 \textbf{Hora inicio: } \Sexpr{ifelse(is.na(hoja_c[8,3]),'nd',substr(hoja_c[8,3],12,16))}\\
 \textbf{Hora término: } \Sexpr{ifelse(is.na(hoja_c[9,3]),'nd',substr(hoja_c[9,3],12,16))}\\
