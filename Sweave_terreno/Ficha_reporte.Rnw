@@ -5,7 +5,7 @@
 
 channel_name <- 'Canal Churque'
 org <- 'Asociación de Canalistas del Embalse Recoleta'
-# archivo <- "/path/to/data.xlsx"
+archivo <- '~/Desktop/Proyectos/rating_curve/Datos/Planillas de Aforo/FID 0_Entrada Canal El Churque/Altura_0.31 m/FID 0_14-11_A1_0,31.xlsx' # archivo <- "/path/to/data.xlsx"
 
 #####
 ## Inicialización
@@ -23,6 +23,8 @@ pacman::p_load('XLConnect', 'ggplot2', 'sp','raster','automap','xtable','ggmap',
 # library(RStoolbox)
 # library(ggrepel)
 # library(ggsn)
+
+options(digits = 2, OutDec = ",")
 
 #####
 ## Código
@@ -44,11 +46,11 @@ names(datos) <- c('Vert','Prof','v0.2','v0.6','v0.8','vm','qs')
 
 datos2 <- hoja[27:(27 + (ix)*2 + 2),c(3,4,13:15,22:35)]
 datos2 <- datos2[apply(is.na(datos2),MARGIN = 1,FUN = sum) < 18,]
-names(datos2) <- c('Vert','Prof','h0.2','h0.6','h0.8',
-                   'r0.2a','r0.2b','r0.2c',
-                   'r0.6a','r0.6b','r0.6c',
-                   'r0.8a','r0.8b','r0.8c',
-                   'v0.2','v0.6','v0.8','vm','qs')
+names(datos2) <- c('Vert','Prof','h0,2','h0,6','h0,8',
+                   'r0,2a','r0,2b','r0,2c',
+                   'r0,6a','r0,6b','r0,6c',
+                   'r0,8a','r0,8b','r0,8c',
+                   'v0,2','v0,6','v0,8','vm','qs')
 
 maxPro <- max(datos[,2],na.rm = T)
 
@@ -213,7 +215,7 @@ Profundidad hidráulica ($D$) & \Sexpr{round(as.numeric(hoja_h[13,9]),2)} m     
 Número de Froude ($F_R$)      & \Sexpr{round(as.numeric(hoja_h[14,9]),2)}     \\
 Régimen de flujo           & \Sexpr{hoja_h[15,9]}     \\
 Temperatura                & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',paste0(round(as.numeric(hoja_h[8,14]),2),' ºC'))}      \\
-Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',round(as.numeric(hoja_h[9,14]),2))}     \\
+Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',formatC(round(as.numeric(hoja_h[9,14]),2),format='f',big.mark='.',digits = 2))}     \\
 \hline
 \end{tabular}
 
@@ -233,8 +235,8 @@ Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',round(a
 \textbf{Fecha: } \Sexpr{ifelse(is.na(hoja_c[7,3]),'nd',substr(hoja_c[7,3],1,10))}\\
 \textbf{Hora inicio: } \Sexpr{ifelse(is.na(hoja_c[8,3]),'nd',substr(hoja_c[8,3],12,16))}\\
 \textbf{Hora término: } \Sexpr{ifelse(is.na(hoja_c[9,3]),'nd',substr(hoja_c[9,3],12,16))}\\
-\textbf{Coordenada ESTE: } \Sexpr{ifelse(is.na(hoja_c[10,3]),'nd',as.numeric(hoja_c[10,3]))}\\
-\textbf{Coordenada NORTE: } \Sexpr{ifelse(is.na(hoja_c[11,3]),'nd',as.numeric(hoja_c[11,3]))}\\
+\textbf{Coordenada ESTE: } \Sexpr{ifelse(is.na(hoja_c[10,3]),'nd',formatC(as.numeric(hoja_c[10,3]),format='f',big.mark='.',digits = 2))}\\
+\textbf{Coordenada NORTE: } \Sexpr{ifelse(is.na(hoja_c[11,3]),'nd',formatC(as.numeric(hoja_c[11,3]),format='f',big.mark='.',digits = 2))}\\
 \textbf{Huso: } \Sexpr{ifelse(is.na(hoja_c[12,3]),'nd',hoja_c[12,3])}\\
 \textbf{Observaciones: } \Sexpr{ifelse(is.na(hoja_c[13,3]),'nd',hoja_c[13,3])}\\
 \textbf{Test de giro: } \Sexpr{ifelse(is.na(hoja_c[14,3]),'nd',paste0(as.numeric(hoja_c[14,3]),' seg'))}\\
@@ -253,7 +255,7 @@ Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',round(a
 
 \headerbox{Caudal}{name=caudal,column=0,below=info,boxColorOne = prommra_light}{
 
-\centering{\textbf{\color{white}\Huge{\Sexpr{hoja_c[21,22]} l/s}}}\\
+\centering{\textbf{\color{white}\Huge{\Sexpr{formatC(as.numeric(hoja_c[21,22]),format='f',big.mark='.',digits = 2)} l/s}}}\\
 
 }
 
@@ -268,7 +270,7 @@ Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_h[8,14]),'',round(a
 print(xtable(datos2,options(xtable.comment = FALSE)),type = "latex",floating = "F",include.rownames = F)
 @
 
-\scriptsize{\textbf{Vert:} posición en la vertical (m); \textbf{Prof:} profundidad de la vertical (m); \textbf{h0.2:} profundidad a 0.2h (m); \textbf{h0.6:} profundidad a 0.6h (m); \textbf{h0.8:} profundidad a 0.8h (m); \textbf{r0.2a:} 1era repetición de velocidad a la profundidad 0.2h (m/s); \textbf{r0.2b:} 2da repetición de velocidad a la profundidad 0.2h (m/s) \textbf{r0.2c:} 3era repetición de velocidad a la profundidad 0.2h (m/s); \textbf{r0.6a:} 1era repetición de velocidad a la profundidad 0.6h (m/s); \textbf{r0.6b:} 2da repetición de velocidad a la profundidad 0.6h (m/s) \textbf{r0.6c:}; 3era repetición de velocidad a la profundidad 0.6h (m/s); \textbf{r0.8a:} 1era repetición de velocidad a la profundidad 0.8h (m/s); \textbf{r0.8b:} 2da repetición de velocidad a la profundidad 0.8h (m/s); \textbf{r0.8c:} 3era repetición de velocidad a la profundidad 0.8h (m/s); \textbf{v0.2:} velocidad media a la profundidad 0.2h (m/s); \textbf{v0.6:} velocidad media a la profundidad 0.6h (m/s); \textbf{v0.8:} velocidad media a la profundidad 0.8h (m/s); \textbf{vm:} velocidad media de la vertical (m/s); \textbf{qs:} caudal por subsección (m\textsuperscript{3}/s).}
+\scriptsize{\textbf{Vert:} posición en la vertical (m); \textbf{Prof:} profundidad de la vertical (m); \textbf{h0,2:} profundidad a 0,2h (m); \textbf{h0,6:} profundidad a 0,6h (m); \textbf{h0,8:} profundidad a 0,8h (m); \textbf{r0,2a:} 1era repetición de velocidad a la profundidad 0,2h (m/s); \textbf{r0,2b:} 2da repetición de velocidad a la profundidad 0,2h (m/s) \textbf{r0,2c:} 3era repetición de velocidad a la profundidad 0,2h (m/s); \textbf{r0,6a:} 1era repetición de velocidad a la profundidad 0,6h (m/s); \textbf{r0,6b:} 2da repetición de velocidad a la profundidad 0,6h (m/s) \textbf{r0,6c:}; 3era repetición de velocidad a la profundidad 0,6h (m/s); \textbf{r0,8a:} 1era repetición de velocidad a la profundidad 0,8h (m/s); \textbf{r0,8b:} 2da repetición de velocidad a la profundidad 0,8h (m/s); \textbf{r0,8c:} 3era repetición de velocidad a la profundidad 0,8h (m/s); \textbf{v0,2:} velocidad media a la profundidad 0,2h (m/s); \textbf{v0,6:} velocidad media a la profundidad 0,6h (m/s); \textbf{v0,8:} velocidad media a la profundidad 0,8h (m/s); \textbf{vm:} velocidad media de la vertical (m/s); \textbf{qs:} caudal por subsección (m\textsuperscript{3}/s).}
 
 }
 
@@ -337,9 +339,11 @@ if (sum(is.na(as.numeric(c(hoja_c[10,3],hoja_c[11,3])))) == 0) {
   names(pt_coo) <- c('x','y')
 
 
-  map2 <- ggmap(gauge_map) + geom_point(data = pt_coo,aes(x = x,y = y),col = 'red',size = 3) + xlab('Este') + ylab('Norte')
+  scaleFUN <- function(x) sprintf("%.2f", x)
 
-  north2(map2,0.8,0.8)
+  map2 <- ggmap(gauge_map) + geom_point(data = pt_coo,aes(x = x,y = y),col = 'red',size = 3) + xlab('Este') + ylab('Norte') + geom_blank() + scale_y_continuous(labels = scaleFUN, expand = c(0,0)) + scale_x_continuous(labels = scaleFUN, expand = c(0,0))
+  
+  north2(map2,0.8,0.8, scale = 0.2)
 }else{
   par(mar = c(0,0,0,0))
   plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
