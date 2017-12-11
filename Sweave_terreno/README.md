@@ -41,3 +41,42 @@ Una vez realizado el procedimiento descrito, compilar el documento con el botón
 ## A considerar
 
 Los archivos deben estar en cualquier carpeta del sistema con la misma organización. Los archivos `Ficha_reporte.Rnw`, `baposter.cls` y la carpeta `figures` dentro de una misma carpeta raíz. El resultado se alojará en la misma carpeta.
+
+# Instalación previa:
+
+Ya que la apertura de archivos de MS Office en R es difícil, se deben realizar los siguientes pasos previos (dependiendo del sistema operativo de cada ordenador):
+
+## Windows:
+
+ - Instalar [Java JDK versión 9](http://www.oracle.com/technetwork/java/javase/downloads/jdk9-downloads-3848520.html).
+
+ - Añadir la variable de entorno `JAVA_HOME` en Panel de control / Sistema / Configuración avanzada de sistema / Variables de entorno / Varibles de sistema / Nueva:
+
+   - Nombre de la variable: `JAVA_HOME`
+   - Valor de la variable: `C:\Program Files\Java\jdk-9.0.1` (para el caso de Java JDK 9.0.1 - 64 Bits)
+
+ - Instalar paquetes `rJava` y `XLConnect`
+
+ - Compilar pdf
+
+## macOS:
+
+ - Instalar [Xcode](https://developer.apple.com/xcode/).
+
+ - Instalar Command Line Tools para Xcode para [macOS 10.12](https://download.developer.apple.com/Developer_Tools/Command_Line_Tools_macOS_10.12_for_Xcode_9.1/Command_Line_Tools_macOS_10.12_for_Xcode_9.1.dmg) o para [macOS 10.13](https://download.developer.apple.com/Developer_Tools/Command_Line_Tools_macOS_10.13_for_Xcode_9.1/Command_Line_Tools_macOS_10.13_for_Xcode_9.1.dmg).
+
+ - Instalar [Java JDK versión 9](http://www.oracle.com/technetwork/java/javase/downloads/jdk9-downloads-3848520.html).
+
+ - Abrir Terminal y ejecutar la siguiente línea: `R CMD javareconf`
+
+ - Instalar paquetes `rJava` y `XLConnect`
+
+ - Compilar pdf
+
+### En el caso que lo anterior no resulte (macOS):
+
+ - Añadir antes de la línea if `(!require("rJava")) install.packages("rJava"); library(rJava)` la siguiente línea:
+
+`dyn.load('/Library/Java/JavaVirtualMachines/jdk-9.0.1.jdk/Contents/Home/lib/server/libjvm.dylib')` (verificar que la ruta y archivo `libjvm.dylib` existan).
+
+**Cualquier duda o consulta, realizarla a la brevedad**
