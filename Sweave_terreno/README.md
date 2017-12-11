@@ -48,6 +48,12 @@ Ya que la apertura de archivos de MS Office en R es difícil, se deben realizar 
 
 ## Windows:
 
+ - Instalar [R](https://cran.r-project.org/bin/windows/).
+ 
+ - Instalar [RStudio](https://www.rstudio.com/products/rstudio/download/#download).
+
+ - Instalar [LaTeX](https://www.latex-project.org/get/) versión completa (aprox. 2GB).
+
  - Instalar [Java JDK versión 9](http://www.oracle.com/technetwork/java/javase/downloads/jdk9-downloads-3848520.html).
 
  - Añadir la variable de entorno `JAVA_HOME` en Panel de control / Sistema / Configuración avanzada de sistema / Variables de entorno / Varibles de sistema / Nueva:
@@ -61,6 +67,12 @@ Ya que la apertura de archivos de MS Office en R es difícil, se deben realizar 
 
 ## macOS:
 
+ - Instalar [R](https://cran.r-project.org/bin/macosx/).
+ 
+ - Instalar [RStudio](https://www.rstudio.com/products/rstudio/download/#download).
+
+ - Instalar [LaTeX](https://www.latex-project.org/get/) versión completa (aprox. 2GB).
+ 
  - Instalar [Xcode](https://developer.apple.com/xcode/).
 
  - Instalar Command Line Tools para Xcode para [macOS 10.12](https://download.developer.apple.com/Developer_Tools/Command_Line_Tools_macOS_10.12_for_Xcode_9.1/Command_Line_Tools_macOS_10.12_for_Xcode_9.1.dmg) o para [macOS 10.13](https://download.developer.apple.com/Developer_Tools/Command_Line_Tools_macOS_10.13_for_Xcode_9.1/Command_Line_Tools_macOS_10.13_for_Xcode_9.1.dmg).
