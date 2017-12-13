@@ -249,7 +249,7 @@ Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_hn[8,14]),'',format
 
 \headerbox{Caudal}{name=caudal,column=0,below=info,boxColorOne = prommra_light}{
 
-\centering{\textbf{\color{white}\Huge{\Sexpr{formatC(as.numeric(hoja_c[21,22]),format='f',big.mark='.',digits = 2)} l/s}}}\\
+\centering{\textbf{\color{white}\Huge{\Sexpr{formatC(as.numeric(hoja[21,22]),format='f',big.mark='.',digits = 2)} l/s}}}\\
 
 }
 
