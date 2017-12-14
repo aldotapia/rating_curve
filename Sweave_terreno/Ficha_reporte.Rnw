@@ -276,7 +276,7 @@ print(xtable(datos2,options(xtable.comment = FALSE)),type = "latex",floating = "
 \headerbox{Esquema perfil transversal}{name=esquema,column=1,span=2,below=detalle}{
 
 \begin{center}
-<<echo=F, fig=T,results=tex,height=4.2,width=10>>=
+<<perfil_transversal,echo=F, fig=T,results=tex,height=4.2,width=10>>=
 # {plot(x=0,y=0, type = 'n',
 #             ylab='Profundidad (m)',xlab='Ancho (m)',asp=1,xlim=c(0,datos[dim(datos)[1],1]),
 #             ylim=c(-maxPro,0),bty='l',usr=c(0,datos[dim(datos)[1],1],-maxPro,0))
@@ -320,7 +320,7 @@ ggplot() + geom_raster(data = krg_df,aes(x = x,y = y,fill = z),alpha = NA) + coo
 \setkeys{Gin}{width=0.9\textwidth}
 
 \begin{center}
-<<echo=F, fig=T,results=tex,height=4,width=4>>=
+<<ubicacion,echo=F, fig=T,results=tex,height=4,width=4>>=
 
 if (sum(is.na(as.numeric(c(hoja[10,3],hoja[11,3])))) == 0) {
   pt <- SpatialPoints(matrix(as.numeric(c(hoja[10,3],hoja[11,3])),nrow = 1), proj4string = CRS('+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '))

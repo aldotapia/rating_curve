@@ -33,7 +33,9 @@ for (l in 1:length(archivos)) { # uso de l para iterar... Rnw usa i y j como ite
   
   # Extraer datos
   Fecha <- ifelse(is.na(hoja_c[7,3]),'nd',substr(hoja_c[7,3],1,10))
-  Caudal <- hoja[21,13]
+  Aforo <- strsplit(nombres[l],'_')[[1]][3]
+  Altura <- strsplit(nombres[l],'_')[[1]][4]
+  Caudal <- hoja[21,22]
   Area <- hoja[61,6]
   Velocidad <- hoja[63,6]
   Prof_h <- as.numeric(hoja_h[13,9])
