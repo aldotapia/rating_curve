@@ -1,0 +1,494 @@
+<<echo=F,results=hide>>=
+#####
+## HEADER
+# Datos a modificar
+
+fecha_curva <- '15 de diciembre de 2017'
+
+archivo <- '/Users/aldotapia/Desktop/Proyectos/rating_curve/Data/Sheets/channel_schema.xlsx' # archivo <- "/path/to/data.xlsx"
+# Cargar datos resumen de aforo
+datosA <- read.csv('~/Desktop/Proyectos/rating_curve/Data/Results/Tabla_resumen.csv')
+
+
+#####
+## Inicialización
+
+if (!require("pacman")) install.packages("pacman"); library(pacman)
+if (!require("rJava")) install.packages("rJava"); library(rJava)
+# https://stackoverflow.com/questions/37735108/r-error-onload-failed-in-loadnamespace-for-rjava
+if (!require("XLConnect")) install.packages("XLConnect"); library(XLConnect)
+
+pacman::p_load('ggplot2', 'sp','automap','xtable','ggmap','ggsn','ggplot2','minpack.lm','magrittr','dplyr')
+
+options(digits = 2, OutDec = ",")
+
+#####
+## Código
+
+wb <- loadWorkbook(archivo)
+
+hoja_c <- readWorksheet(wb,sheet = 'Resumen',colTypes = XLC$DATA_TYPE.STRING,forceConversion = T)
+  
+hoja <- readWorksheet(wb,sheet = 'Resumen',colTypes = XLC$DATA_TYPE.NUMERIC,forceConversion = T)
+
+peralte <- hoja[17,3]
+
+ix <- hoja[23,2]
+
+datos <- hoja[28:(28 + (ix)*2 + 2),c(3,4)]
+datos <- datos[apply(is.na(datos),MARGIN = 1,FUN = sum) < 1,]
+
+names(datos) <- c('Vert','Prof')
+
+maxPro <- max(datos[,2],na.rm = T)
+
+maxLam <- hoja[23,4]
+
+datos2 <- datosA %>% group_by(Altura) %>% summarise(Caudal_mean = mean(Caudal),
+                                                   Caudal_sd = sd(Caudal),
+                                                   Caudal_cv = Caudal_sd / Caudal_mean)
+
+m1 <- nlsLM(Caudal_mean ~ a * (Altura - peralte) + b * (Altura - peralte)^2,start = list(a = 1, b = 1), data = datos2)
+
+m2 <- nlsLM(Caudal_mean ~ peralte + a * (Altura - peralte)^b, start = list(a = 1, b = 1), data = datos2)
+
+m1_result <- data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100),
+                        Caudal_mean = predict(m1,newdata = data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100))))
+
+m2_result <- data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100),
+                        Caudal_mean = predict(m2,newdata = data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100))))
+
+
+R2_m1 <- 1 - (sum((datos2$Caudal_mean - c(m1$m$fitted()) )^2)/sum((datos2$Caudal_mean - mean(c(m1$m$fitted())))^2))
+
+R2_m2 <- 1 - (sum((datos2$Caudal_mean - c(m2$m$fitted()) )^2)/sum((datos2$Caudal_mean - mean(c(m2$m$fitted())))^2))
+
+RMSE_m1 <- sqrt(mean((datos2$Caudal_mean - c(m1$m$fitted()))^2))
+
+RMSE_m2 <- sqrt(mean((datos2$Caudal_mean - c(m2$m$fitted()))^2))
+
+if (R2_m1 > R2_m2) {
+  modelo <- m1
+  dummy_points <- m1_result
+  if (peralte > 0) {
+    eqq <- paste0(round(coef(m1),2)[1],'*(a - p) + ',round(coef(m1),2)[2],'*{(a - p)^2}')
+    eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m); $p$ = peralte (m).')
+  }else{
+    eqq <- paste0(round(coef(m1),2)[1],'*a + ',round(coef(m1),2)[2],'*{a^2}')
+    eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m).')
+  }
+}else{
+  modelo <- m2
+  dummy_points <- m2_result
+  if (peralte > 0) {
+    eqq <- paste0(round(coef(m2),2)[1],'*(a - p)^{',round(coef(m2),2)[2],'}')
+    eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m); $p$ = peralte (m).')
+  }else{
+    eqq <- paste0(round(coef(m2),2)[1],'*a^{',round(coef(m2),2)[2],'}')
+    eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m).')
+  }
+}
+
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% baposter Landscape Poster
+% LaTeX Template
+% Version 1.0 (11/06/13)
+%
+% baposter Class Created by:
+% Brian Amberg (baposter@brian-amberg.de)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+\PassOptionsToPackage{table,dvipsnames,svgnames}{xcolor} %<-- Pass colortbl and defined colours to xcolor
+
+\documentclass[landscape,a0paper,fontscale=0.250]{baposter} % Adjust the font scale/size here
+
+\usepackage{graphicx} % Required for including images
+\graphicspath{{figures/}} % Directory in which figures are stored
+
+\selectcolormodel{HTML} %<-- Add colour model defintion
+\definecolor{VeryCold}{HTML}{000000}  % becomes 231F20 in the pdf
+\definecolor{Cold}{HTML}{FFFFFF}  % stays FFFFFF in the pdf
+\definecolor{Cool}{HTML}{FF0000}  % becomes ED1C24 in the pdf
+\definecolor{SlightlyCool}{HTML}{00FF00}  % becomes 00A650 in the pdf
+\definecolor{Comfortable}{HTML}{0000FF}  % becomes 2E3192 in the pdf
+%\definecolor{Comfortable}{RGB}{00, 00, 255}  % no difference so the method to define the colors should be fine
+
+\usepackage{amsmath} % For typesetting math
+\usepackage{amssymb} % Adds new symbols to be used in math mode
+\usepackage{relsize} % Used for making text smaller in some places
+\usepackage{multirow} % https://tex.stackexchange.com/questions/72945/how-to-merge-cells-vertically
+
+\usepackage[utf8]{inputenc} % Spanish purpose
+\usepackage[T1]{fontenc} % Spanish purpose
+
+\usepackage{booktabs} % Top and bottom rules for tables
+\usepackage{enumitem} % Used to reduce itemize/enumerate spacing
+\usepackage[font=small,labelfont=bf]{caption} % Required for specifying captions to tables and figures
+\usepackage{tabulary} % https://tex.stackexchange.com/questions/135384/making-table-width-fit-into-text-width
+
+
+\usepackage{multicol} % Required for multiple columns
+\usepackage{listings}
+\setlength{\columnsep}{1.5em} % Slightly increase the space between columns
+\setlength{\columnseprule}{0mm} % No horizontal rule between columns
+
+\usepackage{tikz} % Required for flow chart
+\usetikzlibrary{shapes,arrows} % Tikz libraries required for the flow chart in the template
+
+\newcommand{\compresslist}{ % Define a command to reduce spacing within itemize/enumerate environments, this is used right after \begin{itemize} or \begin{enumerate}
+\setlength{\itemsep}{1pt}
+\setlength{\parskip}{0pt}
+\setlength{\parsep}{0pt}
+}
+
+\definecolor{lightblue}{rgb}{0.145,0.6666,1} % Defines the color used for content box headers
+
+\definecolor{prommra_light}{rgb}{0.522,0.137,0.141}
+\definecolor{prommra_dark}{rgb}{0.192,0.047,0.055}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+
+
+\begin{document}
+
+\SweaveOpts{concordance=TRUE}
+
+\begin{poster}
+{
+headerborder=closed, % Adds a border around the header of content boxes
+colspacing=1em, % Column spacing
+bgColorOne=white, % Background color for the gradient on the left side of the poster
+bgColorTwo=white, % Background color for the gradient on the right side of the poster
+borderColor=prommra_light, % Border color
+headerColorOne=prommra_dark, % Background color for the header in the content boxes (left side)
+headerColorTwo=prommra_light, % Background color for the header in the content boxes (right side)
+headerFontColor=white, % Text color for the header text in the content boxes
+boxColorOne=white, % Background color of the content boxes
+textborder=rectangle, % Format of the border around content boxes, can be: none, bars, coils, triangles, rectangle, rounded, roundedsmall, roundedright or faded
+eyecatcher=true, % Set to false for ignoring the left logo in the title and move the title left
+headerheight=0.1\textheight, % Height of the header
+headershape=rectangle, % Specify the rounded corner in the content box headers, can be: rectangle, small-rounded, roundedright, roundedleft or rounded
+headerfont=\Large\bf, % Large, bold and sans serif font in the headers of content boxes
+%textfont={\setlength{\parindent}{1.5em}}, % Uncomment for paragraph indentation
+linewidth=2pt % Width of the border lines around content boxes
+}
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION 
+%----------------------------------------------------------------------------------------
+%
+{\includegraphics[height=6em,keepaspectratio]{uls.png}} % First university/lab logo on the left
+{\bf\textsc{\huge{Curva de gasto: \Sexpr{hoja_c[4,3]}}}\vspace{0.1em}} % Poster title
+{\textsc{\normalsize{Relación altura de referencia - caudal}}\scriptsize{\\ }} % Organización de usuario de aguas
+{\includegraphics[height=4em,keepaspectratio]{prommra.png}} % Second university/lab logo on the right
+
+\setkeys{Gin}{width=1\textwidth}
+
+%----------------------------------------------------------------------------------------
+%	Gráfico
+%----------------------------------------------------------------------------------------
+
+\headerbox{Gráfico de regresión}{name=grafico,column=0,above=bottom}{
+
+
+\begin{center}
+<<curva_aforo,echo=F, fig=T,results=tex,height=3.9,width=3.9>>=
+
+ggplot(datos2,aes(x = Altura, y = Caudal_mean)) +
+  ylab(expression(paste('Caudal (l/s)'))) +
+  xlab('Altura referencia (m)') + theme_classic() + 
+  scale_x_continuous(limits = c(0,max(datos2$Altura)*1.15),expand = c(0,0)) +
+  scale_y_continuous(limits = c(0,max(datos2$Caudal_mean)*1.15),expand = c(0,0)) +
+  geom_line(aes(x = Altura, y = Caudal_mean), data = dummy_points[dummy_points$Caudal_mean>0,], col = 'red') +
+  geom_point(shape = 1,size=2,col = "#4292c6") 
+
+@
+\end{center}
+
+}
+
+
+
+%----------------------------------------------------------------------------------------
+%	Información general
+%----------------------------------------------------------------------------------------
+
+\headerbox{Información general}{name=info,column=0,row=0, span = 2,headerColorOne=white,headerColorTwo=white,borderColor=white,headerFontColor=black}{
+
+\centering
+\begin{tabulary}{\textwidth}{|L|L|}
+\hline
+\parbox{18em}{\textbf{Nombre de canal}}            & \Sexpr{hoja_c[4,3]} \\
+\hline
+\textbf{Localización}            & \Sexpr{hoja_c[5,3]} \\
+\hline
+\multirow{3}{*}{\textbf{Coordenadas UTM}} & \Sexpr{formatC(hoja[7,3],format = 'f',big.mark = '.',digits = 2)} m \textbf{Norte} \\
+                     & \Sexpr{formatC(hoja[8,3],format = 'f',big.mark = '.',digits = 2)} m \textbf{Este} \\
+                     & \Sexpr{formatC(hoja[9,3],format = 'f',big.mark = '.',digits = 2)} msnm \textbf{Altitud} \\
+\hline
+\textbf{Organización}            & \Sexpr{hoja_c[11,3]} \\
+\hline
+\textbf{Tipo de compuerta}            & \Sexpr{hoja_c[12,3]} \\
+\hline
+\textbf{Tipo de aforador}            & \Sexpr{hoja_c[13,3]} \\
+\hline
+\textbf{Tipo revestimiento}            & \Sexpr{hoja_c[14,3]} \\
+\hline
+\textbf{Fecha curva}            & \Sexpr{fecha_curva} \\
+\hline
+\end{tabulary}
+\vfill
+
+\vspace{0.3em} % When there are two boxes, some whitespace may need to be added if the one on the right has more content
+}
+
+
+%----------------------------------------------------------------------------------------
+%	Ecuación
+%----------------------------------------------------------------------------------------
+
+\headerbox{Ecuación de la curva de descarga}{name=caudal,column=0,span=2,below=info, above = grafico}{
+
+
+\LARGE{\Sexpr{paste0('$$Q = ',eqq,'$$')}}\normalsize{ }
+
+Donde:\\
+
+\Sexpr{eqd}
+
+}
+
+
+
+
+%----------------------------------------------------------------------------------------
+%	Esquema perfil transversal
+%----------------------------------------------------------------------------------------
+
+\headerbox{Esquema perfil transversal}{name=esquema,column=1,span=2,above=bottom, aligned = grafico}{
+
+\vspace{1em}
+
+\begin{center}
+<<perfil_transversal,echo=F, fig=T,results=tex,height=4.2,width=10>>=
+
+line1 <- data.frame(x = c(0,datos$Vert,datos$Vert[length(datos$Vert)]),y = c(maxPro - 0,maxPro - datos$Prof,maxPro - 0))
+
+ribbon <- data.frame(approx(x = line1$x[2:(dim(line1)[1] - 1)],
+                            y = line1$y[2:(dim(line1)[1] - 1)], n = 500))
+ribbon <- ribbon[ribbon$y <= maxLam,]
+
+
+ggplot() + coord_equal() + geom_ribbon(data = ribbon, aes(ymin = y, ymax = maxLam, x = x), fill = "#c6dbef") + geom_line(data = line1, aes(x,y),size = 0.75) + theme_classic() + theme(legend.position = "none") + xlab('Ancho (m)') + ylab('Alto (m)')
+
+@
+\end{center}
+
+}
+
+
+%----------------------------------------------------------------------------------------
+%	Ubicación
+%----------------------------------------------------------------------------------------
+
+\headerbox{Ubicación}{name=ubicacion,column=3,span=1,above=bottom, aligned = grafico}{
+
+\setkeys{Gin}{width=0.9\textwidth}
+
+\vspace{1.3em}
+
+\begin{center}
+<<mapa,echo=F, fig=T,results=tex,height=4,width=4>>=
+
+if (sum(is.na(as.numeric(c(hoja[7,3],hoja[8,3])))) == 0) {
+  pt <- SpatialPoints(matrix(as.numeric(c(hoja[7,3],hoja[8,3])),nrow = 1), proj4string = CRS('+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '))
+
+  pt <- spTransform(pt, CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
+
+  gauge_map <- get_map(coordinates(pt), maptype = "satellite", source = "google", zoom = 14)
+
+  pt_coo <- as.data.frame(pt@coords)
+  names(pt_coo) <- c('x','y')
+
+
+  scaleFUN <- function(x) sprintf("%.2f", x)
+
+  map2 <- ggmap(gauge_map) + geom_point(data = pt_coo,aes(x = x,y = y),col = 'red',size = 3) + xlab('Este') + ylab('Norte') + geom_blank() + scale_y_continuous(labels = scaleFUN, expand = c(0,0)) + scale_x_continuous(labels = scaleFUN, expand = c(0,0))
+  
+  north2(map2,0.8,0.8, scale = 0.2)
+}else{
+  par(mar = c(0,0,0,0))
+  plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+  text(x = 0.5, y = 0.5, paste("Sin coordenadas\n","para determinar\n","ubicación en mapa."), cex = 1.6, col = "black")
+}
+@
+\end{center}
+
+}
+
+
+%----------------------------------------------------------------------------------------
+%	Tabla
+%----------------------------------------------------------------------------------------
+
+\headerbox{Tabla de altura - caudal}{name=tabla,column=2,span=2,row=0, above = ubicacion}{
+
+<<echo=F,results=hide>>=
+#x_test <- seq(from = 0,to = max(datos2$Altura)*1.2,by = 0.01)
+
+x_test <- seq(from = 0,to = maxLam,by = 0.01)
+
+y_test <- predict(modelo,newdata = data.frame(Altura = x_test))
+
+y_test[y_test < 0] <- 0
+
+y_test <- formatC(y_test,format = 'f',big.mark = '.',digits = 2)
+
+ddff <- data.frame(ID = 0, Altura = x_test, Caudal = y_test)
+
+ddff <- ddff[which(ddff$Altura == peralte):dim(ddff)[1],]
+
+ddff$ID <- 1:dim(ddff)[1]
+
+dm <- dim(ddff)[1]
+
+if (dm > 16) {
+  ddff2 <- data.frame(ddff[1:16,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),1)
+  size <- "\\fontsize{14pt}{15pt}\\selectfont"
+  ali <- 'rcr'
+}
+
+
+if (dm <= 16 & dm > 32) {
+  ddff2 <- data.frame(ddff[1:16,],ddff[17:32,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),2)
+  size <- "\\fontsize{14pt}{15pt}\\selectfont"
+  ali <- 'rcrrcr'
+}
+
+if (dm <= 48 & dm > 32) {
+  ddff2 <- data.frame(ddff[1:16,],ddff[17:32,],ddff[33:48,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),3)
+  size <- "\\fontsize{14pt}{15pt}\\selectfont"
+  ali <- 'rcrrcrrcr'
+}
+
+if (dm <= 51 & dm > 48) {
+  ddff2 <- data.frame(ddff[1:17,],ddff[18:34,],ddff[35:51,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),3)
+  size <- "\\fontsize{13pt}{14pt}\\selectfont"
+  ali <- 'rcrrcrrcr'
+}
+
+if (dm <= 57 & dm > 51) {
+  ddff2 <- data.frame(ddff[1:19,],ddff[20:38,],ddff[39:57,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),3)
+  size <- "\\fontsize{12pt}{13pt}\\selectfont"
+  ali <- 'rcrrcrrcr'
+}
+
+if (dm <= 60 & dm > 57) {
+  ddff2 <- data.frame(ddff[1:20,],ddff[21:40,],ddff[41:60,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),3)
+  size <- "\\fontsize{11pt}{12pt}\\selectfont"
+  ali <- 'rcrrcrrcr'
+}
+
+if (dm <= 66 & dm > 60) {
+  ddff2 <- data.frame(ddff[1:22,],ddff[23:44,],ddff[45:66,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),3)
+  size <- "\\fontsize{10pt}{11pt}\\selectfont"
+  ali <- 'rcrrcrrcr'
+}
+
+if (dm <= 75 & dm > 66) {
+  ddff2 <- data.frame(ddff[1:25,],ddff[26:50,],ddff[51:75,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),3)
+  size <- "\\fontsize{9pt}{10pt}\\selectfont"
+  ali <- 'rcrrcrrcr'
+}
+
+if (dm <= 100 & dm > 75) {
+  ddff2 <- data.frame(ddff[1:25,],ddff[26:50,],ddff[51:75,],ddff[76:100,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),4)
+  size <- "\\fontsize{9pt}{10pt}\\selectfont"
+  ali <- 'rcrrcrrcrrcr'
+}
+
+if (dm <= 112 & dm > 100) {
+  ddff2 <- data.frame(ddff[1:28,],ddff[29:56,],ddff[57:84,],ddff[85:112,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),4)
+  size <- "\\fontsize{8pt}{9pt}\\selectfont"
+  ali <- 'rcrrcrrcrrcr'
+}
+
+if (dm <= 124 & dm > 112) {
+  ddff2 <- data.frame(ddff[1:31,],ddff[32:62,],ddff[63:93,],ddff[94:124,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),4)
+  size <- "\\fontsize{7pt}{8pt}\\selectfont"
+  ali <- 'rcrrcrrcrrcr'
+}
+
+if (dm <= 144 & dm > 124) {
+  ddff2 <- data.frame(ddff[1:36,],ddff[37:72,],ddff[73:108,],ddff[109:144,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),4)
+  size <- "\\fontsize{6pt}{7pt}\\selectfont"
+  ali <- 'rcrrcrrcrrcr'
+}
+
+if (dm <= 180 & dm > 144) {
+  ddff2 <- data.frame(ddff[1:36,],ddff[37:72,],ddff[73:108,],ddff[109:144,],ddff[145:180,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),5)
+  size <- "\\fontsize{6pt}{7pt}\\selectfont"
+  ali <- 'rcrrcrrcrrcrrcr'
+}
+
+if (dm <= 210 & dm > 180) {
+  ddff2 <- data.frame(ddff[1:42,],ddff[43:84,],ddff[85:126,],ddff[127:168,],ddff[169:210,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),5)
+  size <- "\\fontsize{5pt}{6pt}\\selectfont"
+  ali <- 'rcrrcrrcrrcrrcr'
+}
+
+if (dm <= 255 & dm > 210) {
+  ddff2 <- data.frame(ddff[1:51,],ddff[52:102,],ddff[103:153,],ddff[154:204,],ddff[205:255,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),5)
+  size <- "\\fontsize{4pt}{5pt}\\selectfont"
+  ali <- 'rcrrcrrcrrcrrcr'
+}
+
+if (dm > 255) {
+  ddff2 <- data.frame(ddff[1:51,],ddff[52:102,],ddff[103:153,],ddff[154:204,],ddff[205:255,],ddff[256:306,])
+  names(ddff2) <- rep(c('','a (m)','Q (l/s)'),6)
+  size <- "\\fontsize{4pt}{5pt}\\selectfont"
+  ali <- 'rcrrcrrcrrcrrcrrcr'
+}
+@
+
+\begin{center}
+<<echo=F,results=tex>>=
+print(xtable(ddff2,align = c('l',strsplit(x = ali,split = '')[[1]])),type = 'latex',include.rownames = F,floating = "F",size = size)
+@
+\end{center}
+
+
+}
+
+
+\end{poster}
+
+\end{document}
+
