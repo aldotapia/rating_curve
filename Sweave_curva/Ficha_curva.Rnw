@@ -155,8 +155,8 @@ if (R2_m1 > R2_m2) {
 
 \definecolor{lightblue}{rgb}{0.145,0.6666,1} % Defines the color used for content box headers
 
-\definecolor{prommra_light}{rgb}{0.522,0.137,0.141}
-\definecolor{prommra_dark}{rgb}{0.192,0.047,0.055}
+\definecolor{prommra_light}{rgb}{0.522,0.137,0.141} %Prommra: \definecolor{prommra_light}{rgb}{0.522,0.137,0.141} Raiz: \definecolor{prommra_light}{rgb}{0.353,0.510,0.714}
+\definecolor{prommra_dark}{rgb}{0.192,0.047,0.055} %Prommra: \definecolor{prommra_dark}{rgb}{0.192,0.047,0.055} Raiz: \definecolor{prommra_dark}{rgb}{0.184,0.227,0.439}
 
 \renewcommand{\familydefault}{\sfdefault}
 
@@ -189,10 +189,10 @@ linewidth=2pt % Width of the border lines around content boxes
 %	TITLE SECTION 
 %----------------------------------------------------------------------------------------
 %
-{\includegraphics[height=6em,keepaspectratio]{uls.png}} % First university/lab logo on the left
+{\includegraphics[height=6em,keepaspectratio]{uls.png}} % Prommra: uls.png Raiz: horizsinfondo.png
 {\bf\textsc{\huge{Curva de gasto: \Sexpr{hoja_c[4,3]}}}\vspace{0.1em}} % Poster title
 {\textsc{\normalsize{Relación altura de referencia - caudal}}\scriptsize{\\ }} % Organización de usuario de aguas
-{\includegraphics[height=4em,keepaspectratio]{prommra.png}} % Second university/lab logo on the right
+{\includegraphics[height=4em,keepaspectratio]{prommra.png}} % Prommra: prommra.png Raiz: LOGO_RECOLETA.png
 
 \setkeys{Gin}{width=1\textwidth}
 
