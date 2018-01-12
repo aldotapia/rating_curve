@@ -211,7 +211,7 @@ ggplot(datos2,aes(x = Altura, y = Caudal_mean)) +
   xlab('Altura referencia (m)') + theme_classic() + 
   scale_x_continuous(limits = c(0,max(datos2$Altura)*1.15),expand = c(0,0)) +
   scale_y_continuous(limits = c(0,max(datos2$Caudal_mean)*1.15),expand = c(0,0)) +
-  geom_line(aes(x = Altura, y = Caudal_mean), data = dummy_points[dummy_points$Caudal_mean>0,], col = 'red') +
+  geom_line(aes(x = Altura, y = Caudal_mean), data = dummy_points[dummy_points$Caudal_mean > 0 & dummy_points$Altura >= peralte,], col = 'red') +
   geom_point(shape = 1,size=2,col = "#4292c6") 
 
 @
@@ -372,7 +372,7 @@ if (dm > 16) {
 }
 
 
-if (dm <= 16 & dm > 32) {
+if (dm <= 32 & dm > 16) {
   ddff2 <- data.frame(ddff[1:16,],ddff[17:32,])
   names(ddff2) <- rep(c('','a (m)','Q (l/s)'),2)
   size <- "\\fontsize{14pt}{15pt}\\selectfont"
