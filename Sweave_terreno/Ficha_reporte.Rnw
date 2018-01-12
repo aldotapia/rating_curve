@@ -5,7 +5,8 @@
 
 channel_name <- 'Canal Ejemplo'
 org <- 'Asociación de Canalistas Ficticia'
-archivo <- 'C:/Users/alpha/OneDrive/Documentos/GitHub/rating_curve/Data/Sheets/example_sheet.xlsx' # archivo <- "/path/to/data.xlsx"
+archivo <- '~/Desktop/Proyectos/rating_curve/Data/Sheets/example_sheet.xlsx' # archivo <- "/path/to/data.xlsx"
+
 
 #####
 ## Inicialización
@@ -83,7 +84,9 @@ krg <- as(krigging[[1]],'RasterLayer')
 
 krg <- mask(krg,poligono)
 
+hinicio <- ifelse(is.na(hoja_c[8,3]),'nd',paste0(formatC((((hoja[8,3]*24))*60) %/% 60, width = 2, flag = "0"),':',formatC(round((((hoja[8,3]*24))*60) %% 60), width = 2, flag = "0")))
 
+hfinal <- ifelse(is.na(hoja_c[9,3]),'nd',paste0(formatC((((hoja[9,3]*24))*60) %/% 60, width = 2, flag = "0"),':',formatC(round((((hoja[9,3]*24))*60) %% 60), width = 2, flag = "0")))
 
 @
 
@@ -149,8 +152,8 @@ krg <- mask(krg,poligono)
 
 \definecolor{lightblue}{rgb}{0.145,0.6666,1} % Defines the color used for content box headers
 
-\definecolor{prommra_light}{rgb}{0.522,0.137,0.141}
-\definecolor{prommra_dark}{rgb}{0.192,0.047,0.055}
+\definecolor{prommra_light}{rgb}{0.522,0.137,0.141} %Prommra: \definecolor{prommra_light}{rgb}{0.522,0.137,0.141} Raiz: \definecolor{prommra_light}{rgb}{0.353,0.510,0.714}
+\definecolor{prommra_dark}{rgb}{0.192,0.047,0.055} %Prommra: \definecolor{prommra_dark}{rgb}{0.192,0.047,0.055} Raiz: \definecolor{prommra_dark}{rgb}{0.184,0.227,0.439}
 
 \renewcommand{\familydefault}{\sfdefault}
 
@@ -181,10 +184,10 @@ linewidth=2pt % Width of the border lines around content boxes
 %	TITLE SECTION 
 %----------------------------------------------------------------------------------------
 %
-{\includegraphics[height=6em,keepaspectratio]{uls.png}} % First university/lab logo on the left
+{\includegraphics[height=4em,keepaspectratio]{uls.png}} % Prommra: uls.png Raiz: horizsinfondo.png
 {\bf\textsc{\huge{Resumen de aforo: \Sexpr{channel_name}}}\vspace{0.1em}} % Poster title
 {\textsc{\normalsize{\textbf{OUA:}} \Sexpr{org}}\scriptsize{\\ *OUA = Organización de Usuarios de Agua}} % Organización de usuario de aguas
-{\includegraphics[height=4em,keepaspectratio]{prommra.png}} % Second university/lab logo on the right
+{\includegraphics[height=4em,keepaspectratio]{prommra.png}} % Prommra: prommra.png Raiz: LOGO_RECOLETA.png
 
 \setkeys{Gin}{width=1\textwidth}
 
@@ -224,20 +227,24 @@ Número de Reynolds  ($Re$)       & \Sexpr{ifelse(is.na(hoja_hn[8,14]),'',format
 
 \headerbox{Información general}{name=info,column=0,row=0}{
 
+\begin{small}
+
 \textbf{Localización: } \Sexpr{ifelse(is.na(hoja_c[5,3]),'nd',hoja_c[5,3])}\\
-\textbf{Kilometraje: } \Sexpr{ifelse(hoja_c[6,5] == 'No Aplica','No aplica',ifelse(is.na(hoja_c[6,3]),'nd',paste0(as.numeric(hoja_c[6,3]),' (',hoja_c[6,5],')')))}\\
+\textbf{Kilometraje: } \Sexpr{ifelse((hoja_c[6,5] == 'No Aplica' | is.na(hoja_c[6,5])),'No aplica',ifelse(is.na(hoja_c[6,3]),'nd',paste0(as.numeric(hoja_c[6,3]),' (',hoja_c[6,5],')')))}\\
 \textbf{Fecha: } \Sexpr{ifelse(is.na(hoja_c[7,3]),'nd',substr(hoja_c[7,3],1,10))}\\
-\textbf{Hora inicio: } \Sexpr{ifelse(is.na(hoja_c[8,3]),'nd',substr(hoja_c[8,3],12,16))}\\
-\textbf{Hora término: } \Sexpr{ifelse(is.na(hoja_c[9,3]),'nd',substr(hoja_c[9,3],12,16))}\\
+\textbf{Hora inicio: } \Sexpr{hinicio}\\
+\textbf{Hora término: } \Sexpr{hfinal}\\
 \textbf{Coordenada ESTE: } \Sexpr{ifelse(is.na(hoja_c[10,3]),'nd',formatC(hoja[10,3],format='f',big.mark='.',digits = 2))}\\
 \textbf{Coordenada NORTE: } \Sexpr{ifelse(is.na(hoja_c[11,3]),'nd',formatC(hoja[11,3],format='f',big.mark='.',digits = 2))}\\
 \textbf{Huso: } \Sexpr{ifelse(is.na(hoja_c[12,3]),'nd',hoja_c[12,3])}\\
 \textbf{Observaciones: } \Sexpr{ifelse(is.na(hoja_c[13,3]),'nd',hoja_c[13,3])}\\
 \textbf{Test de giro: } \Sexpr{ifelse(is.na(hoja_c[14,3]),'nd',paste0(as.numeric(hoja_c[14,3]),' seg'))}\\
 
+\end{small}
+
 \vfill
 
-\scriptsize{\textbf{nd:} no hay datos ingresados para este parámetro}
+\tiny{\textbf{nd:} no hay datos ingresados para este parámetro}
 
 \vspace{0.3em} % When there are two boxes, some whitespace may need to be added if the one on the right has more content
 }
