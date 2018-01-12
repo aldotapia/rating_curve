@@ -2,7 +2,7 @@
 
 Esta carpeta está organizada con los siguientes archivos:
 
-  - `Ficha_reporte.Rnw`: Archivo Sweave utilizado para generar la ficha de Resumen de aforo.
+  - `Ficha_curva.Rnw`: Archivo Sweave utilizado para generar la ficha de curva de gasto.
   - `baposter.cls`: Archivo de clase para compilar el fichero tipo [**baposter**](http://www.brian-amberg.de/uni/poster/baposter/baposter_guide.pdf).
   - Carpeta `figures`: Carpeta donde se almacenan las imágenes `prommra.png` y `uls.png`, utilizadas como logos en la parte superior de la ficha.
  
@@ -21,18 +21,24 @@ El archivo debe ejecutarse mediante el IDE [RStudio](https://www.rstudio.com/pro
 
 ## ¿Cómo ejecutar el reporte automático? 
 
-A continuación, se copian las primeras 9 líneas del archivo `Ficha_reporte.Rnw`.
+Primero se debe ajustar [`channel_schema.xlsx`](https://github.com/aldotapia/rating_curve/tree/master/Data/Sheets). Las instrucciones de relleno de información se ubican en (incluir más adelante instrucciones).
+
+Se deben extraer los datos para todas las alturas de referencia a partir de las planillas de aforo levantadas en terreno con el script [`extractor_datos_resumen.R`](https://github.com/aldotapia/rating_curve/blob/master/R/extractor_datos_resumen.R). Las instrucciones de uso se ubican en (incluir más adelante instrucciones).
+
+A continuación, se copian las primeras 10 líneas del archivo `Ficha_reporte.Rnw`.
 
     <<echo=F,results=hide>>=
     #####
     ## HEADER
     # Datos a modificar
     
-    channel_name <- 'Canal Churque'
-    org <- 'Asociación de Canalistas del Embalse Recoleta'
-    # archivo <- "/path/to/data.xlsx"
+    fecha_curva <- '15 de diciembre de 2017'
+    
+    archivo <- '/path/to/channel_schema.xlsx'
+    # Cargar datos resumen de aforo
+    datosA <- read.csv('/path/to/Tabla_resumen.csv')
 
-Son sólo 3 cosas que se deben modificar para ejecutar el reporte de manera correcta. Se debe indicar el nombre del canal asignado al objeto `channel_name` -a modo de ejemplo, Canal Churque-. Luego, asignar la Organización de Usuarios de Agua a la que corresponde el canal al objeto `org` -Asociación de Canalistas del Embalse Recoleta, como ejemplo-. Estos dos valores serán parte de la sección de título de la ficha. Finalmente, asignar la ruta absoluta (o relativa, si se encuentra dentro de la misma carpeta) de la **Planilla PROMMRA Q-CANAL** con los datos de aforo y asginarla al objeto `archivo` (que en este caso se encuentra comentado con un `#`, removerlo para ejecutar el archivo).
+El objeto `fecha_curva` corresponde a la fecha en la cual se generó la curva, esta debe ser ingresada manualmente. El objecto `archivo` corresponde a la ruta donde se encuentra la planilla excel `channel_schema.xlsx`. El objeto `datosA` corresponde a la ruta donde se aloja el archivo resumen de los aforos para la generación de la curva de gasto
 
 Para los nombres o rutas se debe ingresar el valor entre comillas simples o dobles: `'valor'` o `"valor"`.
 
