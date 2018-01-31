@@ -31,6 +31,8 @@ hoja_c <- readWorksheet(wb,sheet = 'Resumen',colTypes = XLC$DATA_TYPE.STRING,for
   
 hoja <- readWorksheet(wb,sheet = 'Resumen',colTypes = XLC$DATA_TYPE.NUMERIC,forceConversion = T)
 
+maxRef <- hoja[20,5]
+
 peralte <- hoja[17,3]
 
 ix <- hoja[23,2]
@@ -348,7 +350,7 @@ if (sum(is.na(as.numeric(c(hoja[7,3],hoja[8,3])))) == 0) {
 <<echo=F,results=hide>>=
 #x_test <- seq(from = 0,to = max(datos2$Altura)*1.2,by = 0.01)
 
-x_test <- seq(from = 0,to = maxLam,by = 0.01)
+x_test <- seq(from = 0,to = maxRef,by = 0.01)
 
 y_test <- predict(modelo,newdata = data.frame(Altura = x_test))
 
