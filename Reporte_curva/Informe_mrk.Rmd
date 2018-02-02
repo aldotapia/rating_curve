@@ -26,7 +26,7 @@ knit_hooks$set(inline = function(x) {
   prettyNum(x, big.mark = ".",decimal.mark = ",", small.mark = ",")
 })
 
-options(digits = 2, OutDec = ",")
+options(digits = 6, OutDec = ",")
 ```
 
 # Introducción
@@ -180,7 +180,9 @@ if (sum(is.na(as.numeric(c(hoja[7,3],hoja[8,3])))) == 0) {
   text(x = 0.5, y = 0.5, paste("Sin coordenadas\n","para determinar\n","ubicación en mapa."), cex = 1.6, col = "black")
 }
 
-x_test <- seq(from = 0,to = maxRef,by = 0.01)
+Inicio <- ifelse(is.na(peralte),0,peralte)
+
+x_test <- seq(from = Inicio,to = maxRef,by = 0.01)
 
 y_test <- predict(modelo,newdata = data.frame(Altura = x_test))
 
