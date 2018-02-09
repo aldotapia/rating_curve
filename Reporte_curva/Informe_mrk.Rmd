@@ -242,11 +242,11 @@ for (i in seq_along(patt)) {
 \\begin{figure}[!h]
   \\centering
 \\begin{subfigure}{.49\\textwidth}
-  \\includegraphics[width=\\textwidth]{',imgs[1],'}
+  \\includegraphics[width=\\textwidth, angle = 0]{',imgs[1],'}
 \\end{subfigure}
 \\hfill
 \\begin{subfigure}{.49\\textwidth}
-  \\includegraphics[width=\\textwidth]{',imgs[2],'}
+  \\includegraphics[width=\\textwidth, angle = 0]{',imgs[2],'}
 \\end{subfigure}
 \\caption{Imágenes del canal ',flist[[i]][[5]],'}
 \\label{fig:fotos_',i,'}
@@ -337,7 +337,7 @@ Acá están las curvas por centímetro para todos los canales
 
 for (i in seq_along(patt)) {
 
-  flist[[i]][[12]] %>% kable(digits = 2, format = 'latex', booktabs = T,linesep = "", align = 'c', caption = paste0('Tabla de altura - caudal del canal  ',flist[[i]][[5]]),row.names = F, format.args = list(decimal.mark = ',', big.mark = "."), longtable = T) %>% kable_styling(latex_options = c("repeat_header")) %>% row_spec(0, bold = T) %>% print()
+  flist[[i]][[12]] %>% kable(digits = 2, format = 'latex', booktabs = T,linesep = "", align = 'c', caption = paste0('Tabla de altura - caudal del canal  ',flist[[i]][[5]]),row.names = F, format.args = list(decimal.mark = ',', big.mark = "."), longtable = T) %>% kable_styling(latex_options = c("repeat_header"), repeat_header_text = "\\emph{(continuación)}") %>% row_spec(0, bold = T) %>% print()
 
 
   cat('
