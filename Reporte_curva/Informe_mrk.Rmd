@@ -55,150 +55,164 @@ flist <- list()
 for (i in seq_along(patt)) {
   flist[[i]] <- list()
 
-fls <- list.files(path = 'Data',pattern = patt[i], full.names = T)
+  fls <- list.files(path = 'Data',pattern = patt[i], full.names = T)
 
-archivo <- fls[charmatch('Data/channel_schema',fls)]
-datosA <- read.csv(fls[pmatch('Data/Tabla_resumen',fls)])
+  archivo <- fls[charmatch('Data/channel_schema',fls)]
+  datosA <- read.csv(fls[pmatch('Data/Tabla_resumen',fls)])
 
 #####
 ## Código
 
-wb <- loadWorkbook(archivo)
+  wb <- loadWorkbook(archivo)
 
-hoja_c <- readWorksheet(wb,sheet = 'Resumen',colTypes = XLC$DATA_TYPE.STRING,forceConversion = T)
+  hoja_c <- readWorksheet(wb,sheet = 'Resumen',colTypes = XLC$DATA_TYPE.STRING,forceConversion = T)
   
-hoja <- readWorksheet(wb,sheet = 'Resumen',colTypes = XLC$DATA_TYPE.NUMERIC,forceConversion = T)
+  hoja <- readWorksheet(wb,sheet = 'Resumen',colTypes = XLC$DATA_TYPE.NUMERIC,forceConversion = T)
 
-maxRef <- hoja[20,5]
+  maxRef <- hoja[20,5]
 
-peralte <- hoja[17,3]
+  peralte <- hoja[17,3]
 
-ix <- hoja[23,2]
+  ix <- hoja[23,2]
 
-datos <- hoja[28:(28 + (ix)*2 + 2),c(3,4)]
-datos <- datos[apply(is.na(datos),MARGIN = 1,FUN = sum) < 1,]
+  datos <- hoja[28:(28 + (ix)*2 + 2),c(3,4)]
+  datos <- datos[apply(is.na(datos),MARGIN = 1,FUN = sum) < 1,]
 
-names(datos) <- c('Vert','Prof')
+  names(datos) <- c('Vert','Prof')
 
-maxPro <- max(datos[,2],na.rm = T)
+  maxPro <- max(datos[,2],na.rm = T)
 
-maxLam <- hoja[23,4]
+  maxLam <- hoja[23,4]
 
-datos2 <- datosA %>% group_by(Altura) %>% summarise(Caudal_mean = mean(Caudal),Caudal_sd = sd(Caudal),Caudal_cv = Caudal_sd * 100 / Caudal_mean)
+  datos2 <- datosA %>% group_by(Altura) %>% summarise(Caudal_mean = mean(Caudal),Caudal_sd = sd(Caudal),Caudal_cv = Caudal_sd * 100 / Caudal_mean)
 
-temp <- datosA %>% arrange(Caudal,Fecha,Altura) %>% select(Fecha, Altura, Caudal) %>% as_tibble()
+  temp <- datosA %>% arrange(Caudal,Fecha,Altura) %>% select(Fecha, Altura, Caudal) %>% as_tibble()
 
-temp <- temp %>% left_join(datos2, by = 'Altura')
+  temp <- temp %>% left_join(datos2, by = 'Altura')
 
-names(temp) <- c('Fecha','Altura (m)', 'Caudal (l/s)', 'Caudal promedio (l/s)', 'Desviación estándar','Coeficiente de variabilidad (%)')
+  names(temp) <- c('Fecha','Altura (m)', 'Caudal (l/s)', 'Caudal promedio (l/s)', 'Desviación estándar','Coeficiente de variabilidad (%)')
 
-flist[[i]][[1]] <- temp
+  flist[[i]][[1]] <- temp
 
-m1 <- nlsLM(Caudal_mean ~ a * (Altura - peralte) + b * (Altura - peralte)^2,start = list(a = 1, b = 1), data = datos2)
+  m1 <- nlsLM(Caudal_mean ~ a * (Altura - peralte) + b * (Altura - peralte)^2,start = list(a = 1, b = 1), data = datos2)
 
-m2 <- nlsLM(Caudal_mean ~ peralte + a * (Altura - peralte)^b, start = list(a = 1, b = 1), data = datos2)
+  m2 <- nlsLM(Caudal_mean ~ peralte + a * (Altura - peralte)^b, start = list(a = 1, b = 1), data = datos2)
 
-m1_result <- data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100),
-                        Caudal_mean = predict(m1,newdata = data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100))))
+  m1_result <- data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100),Caudal_mean = predict(m1,newdata = data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100))))
 
-m2_result <- data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100),
-                        Caudal_mean = predict(m2,newdata = data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100))))
+  m2_result <- data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100),Caudal_mean = predict(m2,newdata = data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100))))
 
 
-R2_m1 <- 1 - (sum((datos2$Caudal_mean - c(m1$m$fitted()) )^2)/sum((datos2$Caudal_mean - mean(c(m1$m$fitted())))^2))
-
-R2_m2 <- 1 - (sum((datos2$Caudal_mean - c(m2$m$fitted()) )^2)/sum((datos2$Caudal_mean - mean(c(m2$m$fitted())))^2))
-
-RMSE_m1 <- sqrt(mean((datos2$Caudal_mean - c(m1$m$fitted()))^2))
-
-RMSE_m2 <- sqrt(mean((datos2$Caudal_mean - c(m2$m$fitted()))^2))
-
-if (R2_m1 > R2_m2) {
-  modelo <- m1
-  dummy_points <- m1_result
-  if (peralte > 0) {
-    eqq <- paste0(round(coef(m1),2)[1],'*(a - p) + ',round(coef(m1),2)[2],'*{(a - p)^2}')
-    eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m); $p$ = peralte (m).')
-  }else{
-    eqq <- paste0(round(coef(m1),2)[1],'*a + ',round(coef(m1),2)[2],'*{a^2}')
-    eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m).')
-  }
-}else{
-  modelo <- m2
-  dummy_points <- m2_result
-  if (peralte > 0) {
-    eqq <- paste0(round(coef(m2),2)[1],'*(a - p)^{',round(coef(m2),2)[2],'}')
-    eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m); $p$ = peralte (m).')
-  }else{
-    eqq <- paste0(round(coef(m2),2)[1],'*a^{',round(coef(m2),2)[2],'}')
-    eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m).')
-  }
-}
-
-flist[[i]][[2]] <- eqq
-flist[[i]][[3]] <- eqd
-flist[[i]][[4]] <- ifelse(R2_m1 > R2_m2, R2_m1, R2_m2)
-flist[[i]][[5]] <- hoja_c[4,3]
-flist[[i]][[6]] <- ggplot(datos2,aes(x = Altura, y = Caudal_mean)) +
-  ylab(expression(paste('Caudal (l/s)'))) +
-  xlab('Altura referencia (m)') + theme_classic() + 
-  scale_x_continuous(limits = c(0,max(datos2$Altura)*1.15),expand = c(0,0)) +
-  scale_y_continuous(limits = c(0,max(datos2$Caudal_mean)*1.15),expand = c(0,0)) +
-  geom_line(aes(x = Altura, y = Caudal_mean), data = dummy_points[dummy_points$Caudal_mean > 0 & dummy_points$Altura >= peralte,], col = 'red') +
-  geom_point(shape = 1,size=2,col = "#4292c6") 
-flist[[i]][[7]] <- formatC(hoja[7,3],format = 'f',big.mark = '.',digits = 2)
-flist[[i]][[8]] <- formatC(hoja[8,3],format = 'f',big.mark = '.',digits = 2)
-flist[[i]][[9]] <- formatC(hoja[9,3],format = 'f',big.mark = '.',digits = 2)
-
-line1 <- data.frame(x = c(0,datos$Vert,datos$Vert[length(datos$Vert)]),y = c(maxPro - 0,maxPro - datos$Prof,maxPro - 0))
-
-ribbon <- data.frame(approx(x = line1$x[2:(dim(line1)[1] - 1)],
-                            y = line1$y[2:(dim(line1)[1] - 1)], n = 500))
-ribbon <- ribbon[ribbon$y <= maxLam,]
-
-flist[[i]][[10]] <- ggplot() + coord_equal() + geom_ribbon(data = ribbon, aes(ymin = y, ymax = maxLam, x = x), fill = "#c6dbef") + geom_line(data = line1, aes(x,y),size = 0.75) + theme_classic() + theme(legend.position = "none") + xlab('Ancho (m)') + ylab('Alto (m)')
-
-if (sum(is.na(as.numeric(c(hoja[7,3],hoja[8,3])))) == 0) {
-  pt <- SpatialPoints(matrix(as.numeric(c(hoja[7,3],hoja[8,3])),nrow = 1), proj4string = CRS('+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '))
-
-  pt <- spTransform(pt, CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
-
-  gauge_map <- get_map(coordinates(pt), maptype = "satellite", source = "google", zoom = 14)
-
-  pt_coo <- as.data.frame(pt@coords)
-  names(pt_coo) <- c('x','y')
-
-
-  scaleFUN <- function(x) sprintf("%.2f", x)
-
-  flist[[i]][[11]] <- ggmap(gauge_map) + geom_point(data = pt_coo,aes(x = x,y = y),col = 'red',size = 3) + xlab('Este') + ylab('Norte') + geom_blank() + scale_y_continuous(labels = scaleFUN, expand = c(0,0)) + scale_x_continuous(labels = scaleFUN, expand = c(0,0))
+  R2_m1 <- 1 - (sum((datos2$Caudal_mean - c(m1$m$fitted()) )^2)/sum((datos2$Caudal_mean - mean(c(m1$m$fitted())))^2))
   
-  #flist[[i]][[11]] <- north2(map2,0.8,0.8, scale = 0.2)
-}else{
-  par(mar = c(0,0,0,0))
-  flist[[i]][[11]] <-plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
-  text(x = 0.5, y = 0.5, paste("Sin coordenadas\n","para determinar\n","ubicación en mapa."), cex = 1.6, col = "black")
-}
-
-Inicio <- ifelse(is.na(peralte),0,peralte)
-
-x_test <- seq(from = Inicio,to = maxRef,by = 0.01)
-
-y_test <- predict(modelo,newdata = data.frame(Altura = x_test))
-
-y_test[y_test < 0] <- 0
-
-y_test <- formatC(y_test,format = 'f',big.mark = '.',digits = 2)
-
-ddff <- data.frame(ID = 0, Altura = x_test, Caudal = y_test)
-
-ddff <- ddff[which(ddff$Altura == peralte):dim(ddff)[1],]
-
-ddff$ID <- 1:dim(ddff)[1]
-
-names(ddff) <- c('ID', 'Altura (m)','Caudal (l/s)')
-
-flist[[i]][[12]] <- ddff
+  R2_m2 <- 1 - (sum((datos2$Caudal_mean - c(m2$m$fitted()) )^2)/sum((datos2$Caudal_mean - mean(c(m2$m$fitted())))^2))
+  
+  RMSE_m1 <- sqrt(mean((datos2$Caudal_mean - c(m1$m$fitted()))^2))
+  
+  RMSE_m2 <- sqrt(mean((datos2$Caudal_mean - c(m2$m$fitted()))^2))
+  
+  if (R2_m1 > R2_m2) {
+    modelo <- m1
+    dummy_points <- m1_result
+    if (peralte > 0) {
+      eqq <- paste0(round(coef(m1),2)[1],'*(a - p) + ',round(coef(m1),2)[2],'*{(a - p)^2}')
+      eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m); $p$ = peralte (m).')
+    }else{
+      eqq <- paste0(round(coef(m1),2)[1],'*a + ',round(coef(m1),2)[2],'*{a^2}')
+      eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m).')
+    }
+  }else{
+    modelo <- m2
+    dummy_points <- m2_result
+    if (peralte > 0) {
+      eqq <- paste0(round(coef(m2),2)[1],'*(a - p)^{',round(coef(m2),2)[2],'}')
+      eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m); $p$ = peralte (m).')
+    }else{
+      eqq <- paste0(round(coef(m2),2)[1],'*a^{',round(coef(m2),2)[2],'}')
+      eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m).')
+    }
+  }
+  
+  flist[[i]][[2]] <- eqq
+  flist[[i]][[3]] <- eqd
+  flist[[i]][[4]] <- ifelse(R2_m1 > R2_m2, R2_m1, R2_m2)
+  flist[[i]][[5]] <- hoja_c[4,3]
+  flist[[i]][[6]] <- ggplot(datos2,aes(x = Altura, y = Caudal_mean)) +
+    ylab(expression(paste('Caudal (l/s)'))) +
+    xlab('Altura referencia (m)') + theme_classic() + 
+    scale_x_continuous(limits = c(0,max(datos2$Altura)*1.15),expand = c(0,0)) +
+    scale_y_continuous(limits = c(0,max(datos2$Caudal_mean)*1.15),expand = c(0,0)) +
+    geom_line(aes(x = Altura, y = Caudal_mean), data = dummy_points[dummy_points$Caudal_mean > 0 & dummy_points$Altura >= peralte,], col = 'red') +
+    geom_point(shape = 1,size=2,col = "#4292c6") 
+  pdf(paste0('temp/curva_',patt[i],'.pdf'),width = 7, height = 3)
+  print(flist[[i]][[6]])
+  dev.off()
+  
+  flist[[i]][[7]] <- formatC(hoja[7,3],format = 'f',big.mark = '.',digits = 2)
+  flist[[i]][[8]] <- formatC(hoja[8,3],format = 'f',big.mark = '.',digits = 2)
+  flist[[i]][[9]] <- formatC(hoja[9,3],format = 'f',big.mark = '.',digits = 2)
+  
+  line1 <- data.frame(x = c(0,datos$Vert,datos$Vert[length(datos$Vert)]),y = c(maxPro - 0,maxPro - datos$Prof,maxPro - 0))
+  
+  ribbon <- data.frame(approx(x = line1$x[2:(dim(line1)[1] - 1)],
+                              y = line1$y[2:(dim(line1)[1] - 1)], n = 500))
+  ribbon <- ribbon[ribbon$y <= maxLam,]
+  
+  flist[[i]][[10]] <- ggplot() + coord_equal() + geom_ribbon(data = ribbon, aes(ymin = y, ymax = maxLam, x = x), fill = "#c6dbef") + geom_line(data = line1, aes(x,y),size = 0.75) + theme_classic() + theme(legend.position = "none") + xlab('Ancho (m)') +   ylab('Alto (m)')
+  
+  pdf(paste0('temp/esquema_',patt[i],'.pdf'),width = 7, height = 3)
+  print(flist[[i]][[10]])
+  dev.off()
+    
+  
+  # if (sum(is.na(as.numeric(c(hoja[7,3],hoja[8,3])))) == 0) {
+  #   pt <- SpatialPoints(matrix(as.numeric(c(hoja[7,3],hoja[8,3])),nrow = 1), proj4string = CRS('+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '))
+  # 
+  #   pt <- spTransform(pt, CRS('+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs '))
+  # 
+  #   gauge_map <- get_map(coordinates(pt), maptype = "satellite", source = "google", zoom = 14)
+  # 
+  #   pt_coo <- as.data.frame(pt@coords)
+  #   names(pt_coo) <- c('x','y')
+  # 
+  # 
+  #   scaleFUN <- function(x) sprintf("%.2f", x)
+  # 
+  #   flist[[i]][[11]] <- ggmap(gauge_map) + geom_point(data = pt_coo,aes(x = x,y = y),col = 'red',size = 3) + xlab('Este') + ylab('Norte') + geom_blank() + scale_y_continuous(labels = scaleFUN, expand = c(0,0)) + scale_x_continuous(labels = scaleFUN, expand   = c(0,0))
+  #   
+  #   pdf(paste0('temp/ubicacion_',patt[i],'.pdf'),width = 4.5, height = 4.5)
+  #   north2(flist[[i]][[11]],0.8,0.75, scale = 0.1)
+  #   dev.off()
+  # }else{
+  #   pdf(paste0('temp/ubicacion_',patt[i],'.pdf'),width = 4.5, height = 4.5)
+  #   par(mar = c(0,0,0,0))
+  #   flist[[i]][[11]] <- plot(c(0, 1), c(0, 1), ann = F, bty = 'n', type = 'n', xaxt = 'n', yaxt = 'n')
+  #   text(x = 0.5, y = 0.5, paste("Sin coordenadas\n","para determinar\n","ubicación en mapa."), cex = 1.6, col = "black")
+  #   print(flist[[i]][[11]])
+  #   dev.off()
+  # }
+  
+    
+  
+  Inicio <- ifelse(is.na(peralte),0,peralte)
+  
+  x_test <- seq(from = Inicio,to = maxRef,by = 0.01)
+  
+  y_test <- predict(modelo,newdata = data.frame(Altura = x_test))
+  
+  y_test[y_test < 0] <- 0
+  
+  y_test <- formatC(y_test,format = 'f',big.mark = '.',digits = 2)
+  
+  ddff <- data.frame(ID = 0, Altura = x_test, Caudal = y_test)
+  
+  ddff <- ddff[which(ddff$Altura == peralte):dim(ddff)[1],]
+  
+  ddff$ID <- 1:dim(ddff)[1]
+  
+  names(ddff) <- c('ID', 'Altura (m)','Caudal (l/s)')
+  
+  flist[[i]][[12]] <- ddff
 
 }
 
@@ -242,10 +256,7 @@ El esquema del canal es el siguiente:
 
 '))
 
-  pdf(paste0('temp/esquema_',patt[i],'.pdf'),width = 7, height = 3)
-  print(flist[[i]][[10]])
-  dev.off()
-  
+
   cat(paste0('
 \\begin{figure}[!h]
   \\centering
@@ -256,22 +267,26 @@ El esquema del canal es el siguiente:
 
              
 
-La ubicación es la siguiente:
 '))
     
-  pdf(paste0('temp/ubicacion_',patt[i],'.pdf'),width = 4.5, height = 4.5)
-  north2(flist[[i]][[11]],0.8,0.75, scale = 0.1)
-  dev.off()
+
+  
+#   cat(paste0('
+# 
+# La ubicación es la siguiente:
+# 
+# 
+# \\begin{figure}[!h]
+#   \\centering
+#   \\includegraphics[width=.5\\textwidth]{temp/ubicacion_',patt[i],'.pdf}
+# \\caption{Esquema del canal ',flist[[i]][[5]],'}
+# \\label{fig:Ubicacion_',patt[i],'}
+# \\end{figure}
+# 
+# '))
+  
   
   cat(paste0('
-\\begin{figure}[!h]
-  \\centering
-  \\includegraphics[width=.5\\textwidth]{temp/ubicacion_',patt[i],'.pdf}
-\\caption{Esquema del canal ',flist[[i]][[5]],'}
-\\label{fig:Ubicacion_',patt[i],'}
-\\end{figure}
-
-             
 
 ## Curva de descarga
       
@@ -294,10 +309,7 @@ El coeficiente $R^2$: ',round(flist[[i]][[4]],3),'
 
 '))
   
-  pdf(paste0('temp/curva_',patt[i],'.pdf'),width = 7, height = 3)
-  print(flist[[i]][[6]])
-  dev.off()
-  
+
   cat(paste0('
 \\begin{figure}[!h]
   \\centering
@@ -321,18 +333,18 @@ El coeficiente $R^2$: ',round(flist[[i]][[4]],3),'
 Acá están las curvas por centímetro para todos los canales
 
 
-```{r echo=FALSE, results='asis',warning=FALSE, message=FALSE}
+```{r echo=FALSE, results = 'asis', warning=FALSE, message=FALSE}
 
 for (i in seq_along(patt)) {
-  
-  flist[[i]][[12]] %>% kable(digits = 2, format = 'latex', booktabs = T,linesep = "", align = 'c', caption = paste0('Tabla de altura - caudal del canal  ',flist[[i]][[5]]),row.names = F, format.args = list(decimal.mark = ',', big.mark = ".")) %>% kable_styling(latex_options = c("repeat_header")) %>% row_spec(0, bold = T) %>% print()
-  
+
+  flist[[i]][[12]] %>% kable(digits = 2, format = 'latex', booktabs = T,linesep = "", align = 'c', caption = paste0('Tabla de altura - caudal del canal  ',flist[[i]][[5]]),row.names = F, format.args = list(decimal.mark = ',', big.mark = "."), longtable = T) %>% kable_styling(latex_options = c("repeat_header")) %>% row_spec(0, bold = T) %>% print()
+
 
   cat('
 
 
 ')
-  
+
 }
 ```
 
