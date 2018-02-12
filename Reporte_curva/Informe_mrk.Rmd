@@ -78,7 +78,7 @@ La construcción de la curva de descarga se realiza mediante un proceso de regre
 
 [^note_call]: *En*: W. Boiten. 2003. Hydrometry: IHE Delft Lecture Note Series. Capítulo 4.
 
-El modelo de la ecuación de protencia es:
+El modelo de la ecuación de potencia es:
 
 $$Q = a{(h_w - h_0)^b}$$
 
@@ -90,7 +90,7 @@ donde:
 $Q$: caudal en l/s.  
 $h_w$: nivel de agua medido (m).  
 $h_0$: nivel de agua donde $Q = 0$.  
-$a, b, c$: coeficientes de ajuste de la escuación.
+$a, b, c$: coeficientes de ajuste de la ecuación.
 
 Considerar que $h_0 \ne 0$ cuando en el lugar de medición existe peralte. Un indicador que considera la relación entre dos variables *coeficiente de determinación* o $R^2$. El coeficiente de determinación entre dos variables se calcula con la siguiente fórmula:
 
