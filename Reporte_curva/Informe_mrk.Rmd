@@ -37,8 +37,132 @@ Prueba: \textbf{texto en negrita 1} o **texto en negrita 2**:
 
     \textbf{texto en negrita 1} o **texto en negrita 2**
 
+# Metodología de generación de la curva de descarga
 
-# Curvas de descarga
+Cuando es medido un número de caudales en una única sección transversal, es posible determinar una relación entre la descarga de una sección y el nivel de altura de la carga de agua. Esta relación se denomina como curva de descarga, también conocida como curva de gasto, curva de relación o curva de relación altura-caudal, y se desarrolla utilizando un conjunto de mediciones de caudal y de altura para establecer la relación entre ambas componentes. Esta curva de descarga va relacionada a un sitio de medición, el cual puede ser un sitio habitual de medición o una estación de registro de niveles de agua.
+
+La curva de descarga se construye determinando una regresión no lineal entre las mediciones sucesivas de caudal y en diferentes alturas. Esta curva se utiliza para convertir los registros de niveles de agua a caudal. Se debe señalar que la curva de descarga se debe realizar periódicamente para asegurar que la relación entre el caudal y la altura medida permanezca constante.
+
+## Preparación de los datos.
+
+Las curvas desarrolladas en el contexto de este estudio están compuestas de la relación de al menos 6 niveles diferentes de altura de agua con el caudal correspondiente a cada nivel. Cada nivel de altura de carga de agua se contruye de 3 repeticiones de medición de caudal, siendo el *promedio* por nivel utilizado para la construcción de la curva. El promedio se calcula de la siguiente manera:
+
+$$\bar x = \frac{{\sum\limits_{i = 1}^n {{x_i}} }}{n}$$
+
+donde:  
+$\bar x$: caudal promedio en l/s.  
+$x_i$: caudal correspondiente a la observación $i$ en l/s.  
+$n$: número total de observaciones por nivel de carga de agua.
+
+Para asegurar que los datos de entrada sean fiables, las repeticiones deben ser similares entre sí. Una medida para determinar dicha condición, es la determinación de la dispersión de los datos a través de la *desviación estándar*. Este indicador mide la desviación de cada observación con respecto al promedio. La desviación estándar se calcula de la siguiente manera:
+
+$$\sigma = \sqrt {\frac{{\sum\limits_{i = 1}^n {{{\left( {{x_i} - \bar x} \right)}^2}} }}{{n - 1}}} $$
+
+donde:  
+$\sigma$: desviación estándar en l/s.
+
+Siendo la desviación estándar un índicador ampliamente utilizado, presenta una desventaja en su uso al establecer comaparciones entre secciones diferentes o inclusive en repeticiones de caudales de diferentes niveles de carga de agua de una misma sección. La unidad de $\sigma$ es heredada de los datos de entrada y el resultado sólo es comparable con el  mismo grupo de datos o tratamiento, en el caso de se un experimiento científico.
+
+Se requiere un indicador normalizado para poder realizar comparaciones entre niveles de carga de agua o secciones de medición. El *coeficiente de variación* mide la variabilidad de una variable con respecto a la magnitud de su media, siendo el producto proporcional a la media, no heredando la unidad de medida de los elementos de entrada. El coeficiente de variación se calcula:
+
+$${C_V} = \frac{\sigma }{{\left| {\bar x} \right|}}$$
+
+donde:  
+$C_V$: coeficiente de variación.
+
+El resultado de este indice se puede expresar como porcentaje (${C_V}(\%) = {C_V}*100$) para facilitar su comprensión. Adicionalmente, este índice es utilizado como un indicador de calidad. Si el ${C_V}(\%) < 5\%$, se asume que el dato de válido para el desarrollo de la curva de descarga; caso contrario, se debe repetir el proceso de adquisición de datos para las 3 repeticiones.
+
+## Construcción de la curva de descarga.
+
+La construcción de la curva de descarga se realiza mediante un proceso de regresión no lineal entre el caudal ($Q$) y el nivel de agua correspondiente ($h$). Asumiendo un  caudal constante, son dos los tipos de ecuaciones principalemente usados en hidrometría[^note_call], estas son las ecuación de potencia y la polinomial de segundo grado o cuadrática. La primera es la más utilizada, mientras que la segunda presenta un gran desempeño en secciones trasnversales que sólo presentan datos de niveles bajos de caudal y se requiere extrapolar datos.
+
+[^note_call]: *En*: W. Boiten. 2003. Hydrometry: IHE Delft Lecture Note Series. Capítulo 4.
+
+El modelo de la ecuación de protencia es:
+
+$$Q = a{(h_w - h_0)^b}$$
+
+mientras que el modelo de la ecuación polinomial de segundo grado es:
+
+$$Q = a(h_w - h_0) + b{(h_w - h_0)^2} + c$$
+
+donde:  
+$Q$: caudal en l/s.  
+$h_w$: nivel de agua medido (m).  
+$h_0$: nivel de agua donde $Q = 0$.  
+$a, b, c$: coeficientes de ajuste de la escuación.
+
+Considerar que $h_0 \ne 0$ cuando en el lugar de medición existe peralte. Un indicador que considera la relación entre dos variables *coeficiente de determinación* o $R^2$. El coeficiente de determinación entre dos variables se calcula con la siguiente fórmula:
+
+$${R^2} = \frac{{\sigma _{xy}^2}}{{\sigma _x^2\sigma _y^2}}$$
+
+donde:  
+$\sigma _{xy}$: covarianza de $x$ e $y$.  
+$\sigma _{x}$: desviación estándar de la variable $x$.  
+$\sigma _{y}$: desviación estándar de la variable $y$.
+
+Siendo la covarianza:
+
+$${\sigma _{xy}} = \frac{1}{n}\sum\limits_{i = 1}^n {\left( {{x_i} - \bar x} \right)\left( {{y_i} - \bar y} \right)} $$
+
+donde:  
+$y_i$: es el nivel del agua en el tiempo $i$ (m).  
+$\bar y$: nivel de agua promedio, en m.  
+$x, \bar x, n$: ya definidos previamente.
+
+Para efectos de este estudio, se utilizó la variación del coeficiente de determinación para evaluar el modelo a utilizar. Ya que este coeficiente determina la calidad del modelo, se escoje el modelo que obtiene un valor de este indicador más cercano a 1. 
+
+Para el cálculo del $R^2$ de un modelo de regresión, es necesario antes construir el modelo para poder evaluar su desempeño. En este contexto, la construcción de los modelos se realizó según el algoritmo de resolución de problemas de mínimos cuadrados no lineales modificado por Levenberg-Marquardt[^note_call2] en el ambiente computacional/lenguaje de programación **R** utilizando la librería `minpack.lm`, siendo el código utilizado algo como lo que se muestra a continuación:
+
+[^note_call2]: J.J. Moré, "The Leveng-Marquardt algorithm: implementation and theory," in *Lecture Notes* en *Mathematics* **630**: Numerial Analysis, G.A. Watson (Editor), Springer-Verlag: Berlín, 1978, pp. 105-116.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(minpack.lm)}
+
+\NormalTok{modelo_polinomial <-}\StringTok{ }\KeywordTok{nlsLM}\NormalTok{(Caudal }\OperatorTok{~}\StringTok{ }\NormalTok{a }\OperatorTok{*}\StringTok{ }\NormalTok{(Altura }\OperatorTok{-}\StringTok{ }\NormalTok{Peralte) }\OperatorTok{+}\StringTok{ }\NormalTok{b }\OperatorTok{*}\StringTok{ }\NormalTok{(Altura }\OperatorTok{-}\StringTok{ }\NormalTok{Peralte)}\OperatorTok{^}\DecValTok{2}\NormalTok{,}
+                           \DataTypeTok{start =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{a =} \DecValTok{1}\NormalTok{, }\DataTypeTok{b =} \DecValTok{1}\NormalTok{), }\DataTypeTok{data =}\NormalTok{ datos)}
+
+\NormalTok{modelo_potencial <-}\StringTok{ }\KeywordTok{nlsLM}\NormalTok{(Caudal }\OperatorTok{~}\StringTok{ }\NormalTok{a }\OperatorTok{*}\StringTok{ }\NormalTok{(Altura }\OperatorTok{-}\StringTok{ }\NormalTok{Peralte)}\OperatorTok{^}\NormalTok{b,}
+                          \DataTypeTok{start =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{a =} \DecValTok{1}\NormalTok{, }\DataTypeTok{b =} \DecValTok{1}\NormalTok{), }\DataTypeTok{data =}\NormalTok{ datos)}
+\end{Highlighting}
+\end{Shaded}
+
+Construyendo los modelos, ya es posible evaluar el $R^2$ de cada modelo y seleccionar la familia de ecuación a considerar:
+
+$$f(h_w - h_0) = \left\{ {\begin{array}{*{20}{c}}
+{a(h_w - h_0) + b{(h_w - h_0)^2}}\\
+{a{(h_w - h_0)^b}}
+\end{array}} \right.\begin{array}{*{20}{c}}
+{R_{polinomial}^2 \ge R_{exponencial}^2}\\
+{R_{polinomial}^2 < R_{exponencial}^2}
+\end{array}$$
+
+Cabe distinguir que, tanto como en el código como en las ecuaciones informadas, el modelo polinomial está suprimido el coeficiente de intersección del eje $y$, ya que se parte del supuestos que $Q(0) = h_w - h_0$ y que en el modelo exponencial, el ajuste de la ecuación considera el efecto que tiene el peralte ($h_0$) sobre la relación caudal/nivel de agua.
+
+Tal como se definió, $R_{polinomial}^2$ y $R_{exponencial}^2$ se contruyen con los resultados del modelo, por lo cual la nueva formulación de este indicador es:
+
+$${R^2} = 1 - \frac{{S{S_{res}}}}{{S{S_{tot}}}}$$
+
+donde:  
+$S{S_{res}}$: suma de los cuadrados de los residuales.  
+$S{S_{tot}}$: suma de los cuadrados de las observaciones.
+
+Siendo la suma de los cuadrados de los residuales la diferencia entre la observación y lo modelado:
+
+$$S{S_{res}} = \sum\limits_{i = 1}^n {{{\left( {{y_i} - {{\hat y}_i}} \right)}^2}} = \sum\limits_{i = 1}^n {{{e_i}^2}}$$
+
+donde:  
+$\hat y _i$: el valor de $y$ modelado para la observación $i$.  
+$e_i$: el error en la observación $i$.
+
+Y la suma de los cuadrados de las observaciones se define como:
+
+$$S{S_{tot}} = \sum\limits_{i = 1}^n {{{\left( {{y_i} - \bar y} \right)}^2}} $$
+
+Una vez seleccionado el modelo de mejor desempeño, se procede a graficar y a construir las tablas de altura - cauldal cada un centímetro.
+
+# Curvas de descarga para los canales analizados
 
 A continuación, se presentan las curvas de descarga de cada punto de monitoreo, además de los coeficientes de desviación estándas y variabilidad.
 
@@ -96,7 +220,7 @@ for (i in seq_along(patt)) {
 
   m1 <- nlsLM(Caudal_mean ~ a * (Altura - peralte) + b * (Altura - peralte)^2,start = list(a = 1, b = 1), data = datos2)
 
-  m2 <- nlsLM(Caudal_mean ~ peralte + a * (Altura - peralte)^b, start = list(a = 1, b = 1), data = datos2)
+  m2 <- nlsLM(Caudal_mean ~ a * (Altura - peralte)^b, start = list(a = 1, b = 1), data = datos2)
 
   m1_result <- data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100),Caudal_mean = predict(m1,newdata = data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100))))
 
@@ -115,21 +239,21 @@ for (i in seq_along(patt)) {
     modelo <- m1
     dummy_points <- m1_result
     if (peralte > 0) {
-      eqq <- paste0(round(coef(m1),2)[1],'*(a - p) + ',round(coef(m1),2)[2],'*{(a - p)^2}')
-      eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m); $p$ = peralte (m).')
+      eqq <- paste0('Q = ',round(coef(m1),2)[1],'*(h_w - h_0) + ',round(coef(m1),2)[2],'*{(h_w - h_0)^2}')
+      eqd <- paste0('$Q$ = Caudal (l/s); $h_w$ = altura de referencia (m); $h_0$ = peralte (m).')
     }else{
-      eqq <- paste0(round(coef(m1),2)[1],'*a + ',round(coef(m1),2)[2],'*{a^2}')
-      eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m).')
+      eqq <- paste0('Q = ',round(coef(m1),2)[1],'* h_w + ',round(coef(m1),2)[2],'*{{h_w}^2}')
+      eqd <- paste0('$Q$ = Caudal (l/s); $h_w$ = altura de referencia (m).')
     }
   }else{
     modelo <- m2
     dummy_points <- m2_result
     if (peralte > 0) {
-      eqq <- paste0(round(coef(m2),2)[1],'*(a - p)^{',round(coef(m2),2)[2],'}')
-      eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m); $p$ = peralte (m).')
+      eqq <- paste0('Q = ',round(coef(m2),2)[1],'*(h_w - h_0)^{',round(coef(m2),2)[2],'}')
+      eqd <- paste0('$Q$ = Caudal (l/s); $h_w$ = altura de referencia (m); $h_0$ = peralte (m).')
     }else{
-      eqq <- paste0(round(coef(m2),2)[1],'*a^{',round(coef(m2),2)[2],'}')
-      eqd <- paste0('$Q$ = Caudal (l/s); $a$ = altura de referencia (m).')
+      eqq <- paste0('Q = ',round(coef(m2),2)[1],'*{h_w}^{',round(coef(m2),2)[2],'}')
+      eqd <- paste0('$Q$ = Caudal (l/s); $h_w$ = altura de referencia (m).')
     }
   }
   
@@ -300,7 +424,7 @@ El esquema del canal es el siguiente:
              
 $$',flist[[i]][[2]],'$$
 
-Donde:
+donde:
 
 ',flist[[i]][[3]],'
 
