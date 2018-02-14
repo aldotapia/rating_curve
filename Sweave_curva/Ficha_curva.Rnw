@@ -52,7 +52,7 @@ datos2 <- datosA %>% group_by(Altura) %>% summarise(Caudal_mean = mean(Caudal),
 
 m1 <- nlsLM(Caudal_mean ~ a * (Altura - peralte) + b * (Altura - peralte)^2,start = list(a = 1, b = 1), data = datos2)
 
-m2 <- nlsLM(Caudal_mean ~ peralte + a * (Altura - peralte)^b, start = list(a = 1, b = 1), data = datos2)
+m2 <- nlsLM(Caudal_mean ~ a * (Altura - peralte)^b, start = list(a = 1, b = 1), data = datos2)
 
 m1_result <- data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100),
                         Caudal_mean = predict(m1,newdata = data.frame(Altura = seq(0,max(datos2$Altura)*1.1, length.out = 100))))
