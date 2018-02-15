@@ -1,5 +1,5 @@
 ---
-title: "Informe_mrk"
+title: "Generación Curvas de Descarga de las estaciones de monitoreo de la red hídrica de la Asociación de Canalistas del Embalse Recoleta (ACER)"
 subparagraph: yes
 output:
   pdf_document:
@@ -19,7 +19,7 @@ if (!require("rJava")) install.packages("rJava"); library(rJava)
 # https://stackoverflow.com/questions/37735108/r-error-onload-failed-in-loadnamespace-for-rjava
 if (!require("XLConnect")) install.packages("XLConnect"); library(XLConnect)
 
-pacman::p_load('ggplot2', 'sp','automap','xtable','ggmap','ggsn','ggplot2','minpack.lm','magrittr','dplyr','knitr','kableExtra')
+pacman::p_load('ggplot2', 'sp','automap','xtable','ggmap','ggsn','ggplot2','minpack.lm','magrittr','dplyr','knitr','kableExtra','purrr')
 
 knitr::opts_chunk$set(echo = F)
 knit_hooks$set(inline = function(x) {
@@ -29,13 +29,171 @@ knit_hooks$set(inline = function(x) {
 options(digits = 6, OutDec = ",")
 ```
 
+\sloppy 
+\begin{titlepage}
+
+\begin{figure}
+ \centering \vspace*{1in}
+  \includegraphics[width=.3\textwidth]{Logo/horizsinfondo.png}
+  \vspace*{1in}
+\end{figure}
+\maketitle \thispagestyle{empty} \vspace*{2.5in}
+\begin{center}
+	\fontsize{14}{0} \selectfont{Febrero 2018}
+\end{center}
+
+\begin{figure}
+  \centering
+\begin{subfigure}{.2\textwidth}
+  \includegraphics[width=\textwidth]{Logo/corfo.jpg}
+\end{subfigure}
+\hfill
+\begin{subfigure}{.2\textwidth}
+  \includegraphics[width=\textwidth]{Logo/LOGO_RECOLETA.png}
+\end{subfigure}
+
+\end{figure}
+
+\end{titlepage}
+
+\begin{titlepage}
+
+
+\textbf{ENTIDAD MANDANTE } 
+
+\vspace*{.1in} Asociación de Canalistas del Embalse Recoleta (ACER)\vspace*{.4in} 
+
+\textbf{ENTIDAD EJECUTORA} 
+
+\vspace*{.1in} RAIZ Consultores
+
+\vfill \textbf{Ovalle}
+\\ \textbf{Febrero de 2018} 
+\\ \textbf{Región de Coquimbo}
+\\ \textbf{Chile} 
+
+\end{titlepage}
+
+\newpage 
+
+\begin{titlepage}
+\centering
+\textbf{EQUIPO DE TRABAJO}\\
+
+\begin{figure}[!h]
+ \centering
+   \vspace*{.5in}
+      \includegraphics[width=.3\textwidth]{Logo/horizsinfondo.png}
+   \vspace*{.5in}
+\end{figure}
+
+\textbf{ENTIDAD EJECUTORA}\\
+\bigskip 
+\textbf{RAIZ Consultores}\\
+\bigskip 
+\textbf{Ing. Agr. Gonzalo Rojas Fernández}\\
+Director de Proyecto\\
+\bigskip 
+\textbf{Ing. Agr. Aldo Tapia Araya}\\
+Ingeniero en Desarrollo\\
+\bigskip 
+\textbf{Ing. Agr. Erick Millón Henríquez}\\
+Ingeniero de Terreno\\
+\bigskip 
+\textbf{Luis Torrejón Cortés}\\
+Equipo de Terreno\\
+\bigskip 
+\textbf{Francisco Tapia Cortés}\\
+Equipo de Terreno\\
+\bigskip 
+\textbf{Dr. Pablo Álvarez Latorre}\\
+Consultor\\
+
+\vspace*{2in}
+\begin{center}
+\textbf{CONTRAPARTE TÉCNICA}\\
+\textbf{Departamento de Administración}\\
+\textbf{Asociación de Canalistas del Embalse Recoleta}\\
+\textbf{Región de Coquimbo}\\
+
+\end{center}
+
+\end{titlepage}
+
 # Introducción
 
-Acá colocar la introducción. Documento hecho en R Markdown, se pueden usar los comandos de \LaTeX o los de Markdown. Revisar la [Hoja de referencia para mayor información](https://www.rstudio.com/wp-content/uploads/2015/03/rmarkdown-spanish.pdf)
+Bajo la ejecución del proyecto *Mejoramiento y fortalecimiento de las capacidades de gestión integrada y administrativas, para el desarrollo de una cultura del agua, y adaptación al cambio climático a través del buen uso del recurso hídrico de la Asociación de Canalistas del Embalse Recoleta*, se le ha encargado a esta consultora, el desarrollo de las curvas de descarga de las estaciones de monitoreo de la red hídrica, pertenecientes a la Asociación de Canalistas del Embalse Recoleta (ACER).
 
-Prueba: \textbf{texto en negrita 1} o **texto en negrita 2**:
+Para el desarrollo de cada una de las curvas de descarga, se trabajó en base a la información proporcionada por el Departamento de Desarrollo y por la Administración de la organización, los cuales considerando el Sistema de Información Geográfica (SIG) de la red hídrica; información de operación, información de gestión, información actualizada de algunas curvas de descarga de estaciones de monitoreo generadas en proyectos anteriores, entre otros.
 
-    \textbf{texto en negrita 1} o **texto en negrita 2**
+Los aforos realizados para la generación de las curvas, fueron ejecutados bajo los criterios definidos en el *Manual Auto instructivo de aforo en canales no revestidos – Ley Nº18.450*, de la Comisión Nacional de Riego (CNR). En el documento se establecen las bases técnicas para la realización de aforos, bajo los criterios técnicos definidos por el organismo, y que, a su vez, permiten validar los datos para poder postularlos a proyectos de mejoramiento de canales.
+
+La realización de los aforos en cada punto, además de cumplir con los criterios técnicos de la CNR, fueron complementados con el uso de herramientas tecnologías, como la desarrollada por el Laboratorio de Prospección, Monitoreo y Modelación de Recursos Agrícolas y Ambientales (PROMMRA) de la Universidad de La Serena, laboratorio que diseñó una planilla automática para el cálculo de caudales denominada PROMMRA – QCANAL, que cumple con los criterios definidos por la CNR. Esta herramienta permite realizar en terreno los cálculos para la determinación de caudales, permitiendo reducir la incertidumbre de los datos levantados.
+
+\newpage
+
+# Procedimiento de aforo
+
+El desarrollo de las curvas se realizó a partir de los volúmenes que están siendo entregados por la Asociación de Canalistas del Embalse Recoleta (ACER) al inicio del período de mayor demanda para riego. Esta condición hace que gran parte de las curvas de descarga tomadas en cada punto de la red de estaciones telemétricas, se compongan de alturas y por ende de caudales mayores. Sin embargo, en algunos puntos de aforo se pudo manipular a discreción las compuertas de entrega y por lo tanto generar una distribución uniforme de alturas y caudales dentro de la curva de descarga generada.
+
+Para la realización de las curvas de descarga fueron ejecutados 6 aforos por estación telemétrica, los cuales permitieron relacionar la altura de la lamina de agua con el caudal pasante.
+
+Previo a la ejecución de los aforos, es necesario seleccionar la sección donde se va realizar la medición. Esta sección debe cumplir con ciertos requisitos técnicos y logísticos para obtener una medición confiable, dentro de lo que destaca la ubicación de esta, la que debe ser en un tramo recto del cauce, donde se aprecien líneas de flujo uniformes y paralelas a los márgenes de la corriente, con una pendiente longitudinal constante (evitar tramos con quiebres fuertes y áreas de aguas muertas, además de contracorrientes o remolinos). La base de la sección debe ser lo más regular posible, con un cauce estable y sin obstáculos o vegetación que interfieran, evitando lechos fangosos. La geología del terreno deberá facilitar, en caso de ser necesario, el acceso para construcción, medición y mantención de obras. En general por tratarse de estaciones telemétricas, estas presentan secciones regulares revestidas,lo cual simplifica la elección de la sección.
+
+Los aforos se realizaron siguiendo el método de Área-Velocidad, el que consiste en la determinación del área de la sección transversal y la velocidad media del flujo de esta, obteniendo como producto el caudal pasante.
+
+El comienzo de la toma de datos, consiste en la medición del ancho total de la sección conductora, el que se obtiene mediante la medición de la distancia horizontal desde un punto de referencia ubicado en el plano de la sección transversal (espejo de agua). Con este ancho, se determina el número de subsecciones, el que está basado *Manual Auto instructivo de aforo en canales no revestidos – Ley Nº18.450* de la CNR y que se define por la siguiente fórmula:
+
+\[{L} = \dfrac{T}{n} \]
+
+donde:  
+\(n\): Número de subsecciones.  
+\(T\): Ancho superficial (m).
+
+\begin{table}[H]
+ \caption{Valores de \(n\)}
+ \centering
+ \begin{tabu} to 0.5\linewidth {>{\centering}X>{\centering}X}
+ \toprule
+ Ancho \(T\) (m) & \(n\)\\
+ \midrule
+ Menos de 1 m & 4 \\  
+	1 - 2 m & 6 \\ 
+	2 - 4 m & 10 \\  
+	4 - 8 m & 16 \\ 
+	8 - 10 m & 20 \\ 
+	Más de 10 m & 24 \\ 
+	\hline 
+ \end{tabu}
+\end{table}
+
+En la planilla PROMMRA Q-CANAL, las subsecciones se determinan de forma automática al ingresar el ancho del canal; procediendo posteriormente a la determinación de la profundidad de cada subsección, lo que se realiza en la parte central de cada una, además de agregar la profundidad de ambos costados del cauce. Con esta información y a partir de la profundidad de las verticales ($h_{w_s}$), las mediciones son realizadas al 20%, 60% u 80% de la profundidad de la vertical. Con esta información se genera dos tipos de valores; (1) La primera clasificación corresponde al valor de la altura desde la lámina de agua a la base del canal (del cual deriva el método tradicional de medición) y (2) el valor de altura desde la base a la lámina de agua, cuyo valor es más práctico en terreno.
+
+\begin{table}[H]
+ \caption{Alturas consideradas para la determinación de velocidad}
+ \centering
+ \begin{tabu} {cc}
+ \toprule
+ $h_{w_s}$ & Medida de velocidad en la subsección\\
+ \midrule 
+	$h_{w_s} \leq 0,2$ m & $0,6h_{w_s}$ \\ 
+	$0,2$ m $< h_{w_s} \leq 0,5$ m  & $0,2h_{w_s}$; $0,6h_{w_s}$\\ 
+	$h_{w_s} \geq 0,5$ m & $0,2h_{w_s}$; $0,6h_{w_s}$; $0,8h_{w_s}$\\
+    \hline 
+ \end{tabu}
+\end{table}
+
+Para la determinación del caudal, se utilizó un molinete de tipo electromagnético marca HACH modelo FH 950. las velocidades determinadas por este equipo fueron ingresadas a la planilla de aforo (PROMMRA Q-Canal) con lo cual se obtuvo el caudal de forma inmediata. Ademas del caudal, la planilla entrega una gráfica con el perfil transversal de la sección aforada, así como la distribución de las velocidades.
+
+Finalmente se deberán seguir algunas consideraciones al realizar el aforo, entre las cuales tenemos:
+
+* El molinete debe quedar completamente sumergido de forma de no incorporar distorsiones en la medida realizada.
+*  El molinete debe colocarse de forma perpendicular a la sección de aforo, paraleloal escurrimiento de forma tal que mida la velocidad del punto.
+*  Se deben tomar 3 medidas o repeticiones para determinar el valor de la velocidaden cada punto.
+*  Es recomendable comenzar tomando las medidas en una vertical desde el fondodel canal.
+*  Se debe comenzar el aforo desde el lado izquierdo del canal, observando este desde hacia aguas abajo. 
+* La toma de medida en un punto, debe durar al menos 60 segundos, anotándose posteriormente la velocidad obtenida, en la hoja respectiva destinada para el aforo. Se considerará válido el promedio de 3 repeticiones por punto.
+
 
 # Metodología de generación de la curva de descarga
 
@@ -343,21 +501,92 @@ for (i in seq_along(patt)) {
 
 ```
 
+# Curvas de descarga de las estaciones de monitoreo de la red hídrica de la ACER
+
+Lsa estaciones de monitoreo se distribuyen por toda la red hídrica de al Asociación de Canalistas del Embalse Recoleta. A continuación se presenta al localización geográfica, expresada según el Sistema de Coordenadas de Referencia WGS 84 UTM huso 19 sur, con las imágenes de cartografía de éstas, expuestas en general y por zonificación debido a su extensión.
+
+```{r echo=FALSE, results='asis',warning=FALSE, message=FALSE}
+
+tibble(ID = seq_along(flist),
+`Estación telemétrica` = sapply(flist,FUN=function(x) x[[5]]),
+`Coord. Este` = sapply(flist,FUN=function(x) x[[7]]),
+`Coord. Norte` = sapply(flist,FUN=function(x) x[[8]]),
+`Altitud (msnm)` = sapply(flist,FUN=function(x) x[[9]])) %>% kable(digits = 2, format = 'latex', booktabs = T,linesep = "", align = 'c', caption = 'Información de georreferenciación de las estaciones telemétrica.',row.names = F, format.args = list(decimal.mark = ',', big.mark = "."), longtable = T) %>% kable_styling(latex_options = c("repeat_header"), repeat_header_text = "\\emph{(continuación)}") %>% row_spec(0, bold = T) %>% print()
+```
+
+\clearpage
+
+
+\begin{sidewaysfigure}[htb]
+   \centering
+   \includegraphics[width=\columnwidth, angle = 0]{./Cartografia/ABC.png}
+   \caption{Imagen general de la distribución de las estaciones de monitoreo en la red hídrica}
+\end{sidewaysfigure}
+
+\clearpage
+
+\begin{sidewaysfigure}[htb]
+   \centering
+   \includegraphics[width=\columnwidth, angle = 0]{./Cartografia/A.png}
+   \caption{Imagen zona A, distribución de las estaciones de monitoreo}
+\end{sidewaysfigure}
+
+\clearpage
+
+\begin{sidewaysfigure}[htb]
+   \centering
+   \includegraphics[width=\columnwidth, angle = 0]{./Cartografia/B.png}
+   \caption{Imagen zona B, distribución de las estaciones de monitoreo}
+\end{sidewaysfigure}
+
+\clearpage
+
+\begin{sidewaysfigure}[htb]
+   \centering
+   \includegraphics[width=\columnwidth, angle = 0]{./Cartografia/C.png}
+   \caption{Imagen zona C, distribución de las estaciones de monitoreo}
+\end{sidewaysfigure}
+
+\clearpage
+
+La información general de cada punto de monitoreo analizado, además de sus respectivas curvas de descarga, se presentan en los siguientes puntos, además del detalle de aforos realizados y sus coeficientes de desviación estándar y variabilidad.
+
+En la sección de anexos se adjunta la tabla con el desarrollo centimétrico de cada una de las curvas y su ficha de resmunen.
 
 ```{r echo=FALSE, results='asis',warning=FALSE, message=FALSE}
 
 for (i in seq_along(patt)) {
-  cat(paste0('# Canal ',flist[[i]][[5]],'\n'))
+  cat(paste0('\\section{Canal ',flist[[i]][[5]],' (ID:',i,')}
+             
+'))
   
-  cat('## Resumen de aforos realizados
+  cat('\\subsection{Resumen de aforos realizados}
       
 ')
   
+#   cat(paste0('
+# 
+# 
+# \\centering
+# \\begin{tabulary}{\\textwidth}{|L|L|}
+# \\toprule
+# \\parbox{18em}{\\textbf{ID}}            & ',i,' \\\\
+# \\hline
+# \\textbf{Nombre de canal}            & ',flist[[i]][[5]],'\\\\
+# \\hline
+# \\multirow{3}{*}{\\textbf{Coordenadas UTM}} & ',flist[[i]][[7]],' m \\textbf{Norte} \\\\
+#                      & ',flist[[i]][[8]],' m \\textbf{Este} \\\\
+#                      & ',flist[[i]][[9]],' msnm \\textbf{Altitud} \\\\
+# \\bottomrule
+# \\end{tabulary}
+# 
+# 
+# '))  
   cat('Acá ingresar texto descriptivo de la sección de aforo
       
 ')
   
-  flist[[i]][[1]] %>% select(-Fecha) %>% kable(digits = 2, format = 'latex', booktabs = T,linesep = "", align = 'c', caption = paste0('Resumen de aforo del canal ',flist[[i]][[5]]), format.args = list(decimal.mark = ',', big.mark = ".")) %>% kable_styling(full_width = T) %>% collapse_rows(latex_hline = 'major') %>% row_spec(0, bold = T) %>% print()
+  
   
   imgs <- list.files(pattern = paste0('foto*.*',patt[i]), recursive = T,full.names = T)
   
@@ -420,7 +649,9 @@ El esquema del canal es el siguiente:
       
 ')
   
-  cat(paste0('Fórmula:
+  flist[[i]][[1]] %>% select(-Fecha) %>% kable(digits = 3, format = 'latex', booktabs = T,linesep = "", align = 'c', caption = paste0('Resumen de aforo del canal ',flist[[i]][[5]]), format.args = list(decimal.mark = ',', big.mark = ".")) %>% kable_styling(full_width = T) %>% collapse_rows(latex_hline = 'major') %>% row_spec(0, bold = T) %>% print()
+  
+  cat(paste0('Ecuación de descarga de caudal:
              
 $$',flist[[i]][[2]],'$$
 
@@ -442,7 +673,7 @@ El coeficiente $R^2$: ',round(flist[[i]][[4]],3),'
 \\label{fig:Curva_',patt[i],'}
 \\end{figure}
 
-
+\\clearpage
 '))  
  
   
@@ -464,11 +695,20 @@ for (i in seq_along(patt)) {
   flist[[i]][[12]] %>% kable(digits = 2, format = 'latex', booktabs = T,linesep = "", align = 'c', caption = paste0('Tabla de altura - caudal del canal  ',flist[[i]][[5]]),row.names = F, format.args = list(decimal.mark = ',', big.mark = "."), longtable = T) %>% kable_styling(latex_options = c("repeat_header"), repeat_header_text = "\\emph{(continuación)}") %>% row_spec(0, bold = T) %>% print()
 
 
-  cat('
+  cat(paste0('
+
+\\clearpage
+
+\\begin{sidewaysfigure}[htb]
+   \\centering
+   \\includegraphics[width=\\columnwidth, angle = 0]{./Curvas/',patt[i],'.pdf}
+\\end{sidewaysfigure}
+
+\\clearpage
 
 
 ')
 
-}
+)}
 ```
 
