@@ -130,7 +130,7 @@ Información general {.section-2}
   </tr>
   <tr>
     <td class="tg-3sds">Coordenadas UTM</td>
-    <td class="tg-8ew1">`r round(hoja_c[[6,3]],2)` m <span style="font-weight:bold">Norte</span><br>`r round(hoja_c[[7,3]],2)` m <span style="font-weight:bold">Este</span><br><span style="font-weight:normal">`r round(hoja_c[[8,3]],2)` msnm </span><span style="font-weight:bold">Altitud</span></td>
+    <td class="tg-8ew1">`r hoja_c[[6,3]]` m <span style="font-weight:bold">Norte</span><br>`r hoja_c[[7,3]]` m <span style="font-weight:bold">Este</span><br><span style="font-weight:normal">`r hoja_c[[8,3]]` msnm </span><span style="font-weight:bold">Altitud</span></td>
   </tr>
   <tr>
     <td class="tg-3sds">Organización</td>
@@ -237,7 +237,7 @@ Ubicación {.section-7 .block}
 
 ```{r, echo=FALSE, results='asis', dev.args = list(bg = 'transparent'), fig.height=4, fig.width=4, fig.align='center', dpi=200, message=FALSE,warning=FALSE, eval = T}
 
-ggmap::register_google('AIzaSyDpbSs8OPPgGwZOxGOaLuE24-g4Myvyj7k') # your code here
+ggmap::register_google('') # your code here
 
 if (sum(is.na(as.numeric(c(hoja[6,3],hoja[7,3])))) == 0) {
   pt <- SpatialPoints(matrix(as.numeric(c(hoja[6,3],hoja[7,3])),nrow = 1), proj4string = CRS('+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '))
