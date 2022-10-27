@@ -14,7 +14,7 @@ output:
 #####
 # configuración
 
-options(digits = 2, OutDec = ",")
+options(digits = 2, OutDec = ",", scipen=999)
 
 
 if (!require("pacman")) install.packages("pacman"); library(pacman)
@@ -161,13 +161,11 @@ Ecuación de la curva de descarga {.section-3 .block}
 
 <span class="eq">`r paste0('$$Q = ',eqq,'$$')`</class>
 
-Donde:
-
-`r eqd`
+<p class="bigger2">Donde: `r eqd`</p>
 
 Tabla de altura - caudal {.section-4 .block}
 ================================================================================
-El caudal está expresado en $[l/s]$. La primera columna es la altura de referencia en $[m]$. Los nombres de las otras columnas son los niveles en $[cm]$ para cada nivel de la altura de referencia. Los valores de la celda corresponde al caudal determinado por la curva de gasto.
+<p class="bigger">El caudal está expresado en $[l/s]$. La primera columna es la altura de referencia en $[m]$. Los nombres de las otras columnas son los niveles en $[cm]$ para cada nivel de la altura de referencia. Los valores de la celda corresponde al caudal determinado por la curva de gasto.</p>
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 Inicio <- ifelse(is.na(peralte),0,peralte)
@@ -178,7 +176,7 @@ y_test <- predict(modelo,newdata = data.frame(Altura = x_test))
 
 y_test[y_test < 0] <- 0
 
-y_test <- formatC(y_test,format = 'f',big.mark = '.',digits = 2)
+y_test <- formatC(y_test,format = 'f',big.mark = '.',digits = 1)
 
 ddff <- data.frame(ID = 0, Altura = x_test, Caudal = y_test)
 
@@ -197,7 +195,7 @@ ddff %>% mutate(centi = round(Altura*100)%%10,
 
 ```{r, results='asis', echo=FALSE, eval = T}
 options(knitr.kable.NA = '')
-ddff2 %>% huxtable::as_huxtable() %>% huxtable::set_bold(1, huxtable::everywhere, TRUE) %>% huxtable::set_all_borders(1) %>% huxtable::set_align('center') %>% huxtable::set_font_size(30) %>% huxtable::set_bold(huxtable::everywhere,col = 1) %>%  huxtable::print_html()
+ddff2 %>% huxtable::as_huxtable() %>% huxtable::set_bold(1, huxtable::everywhere, TRUE) %>% huxtable::set_all_borders(1) %>% huxtable::set_align('center') %>% huxtable::set_font_size(40) %>% huxtable::set_bold(huxtable::everywhere,col = 1) %>%  huxtable::print_html()
 ```
 
 
@@ -237,7 +235,7 @@ Ubicación {.section-7 .block}
 
 ```{r, echo=FALSE, results='asis', dev.args = list(bg = 'transparent'), fig.height=4, fig.width=4, fig.align='center', dpi=200, message=FALSE,warning=FALSE, eval = T}
 
-ggmap::register_google('') # your code here
+ggmap::register_google('AIzaSyCC3GyUFofPXj3txiX_pGyChhheeOk3_RY') # your code here
 
 if (sum(is.na(as.numeric(c(hoja[6,3],hoja[7,3])))) == 0) {
   pt <- SpatialPoints(matrix(as.numeric(c(hoja[6,3],hoja[7,3])),nrow = 1), proj4string = CRS('+proj=utm +zone=19 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs '))
