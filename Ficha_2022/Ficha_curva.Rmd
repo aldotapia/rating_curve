@@ -130,7 +130,7 @@ Información general {.section-2}
   </tr>
   <tr>
     <td class="tg-3sds">Coordenadas UTM</td>
-    <td class="tg-8ew1">`r hoja_c[[6,3]]` m <span style="font-weight:bold">Norte</span><br>`r hoja_c[[7,3]]` m <span style="font-weight:bold">Este</span><br><span style="font-weight:normal">`r hoja_c[[8,3]]` msnm </span><span style="font-weight:bold">Altitud</span></td>
+    <td class="tg-8ew1">`r round(hoja[[6,3]])` m <span style="font-weight:bold">Norte</span><br>`r round(hoja[[7,3]])` m <span style="font-weight:bold">Este</span><br><span style="font-weight:normal">`r round(hoja[[8,3]])` msnm </span><span style="font-weight:bold">Altitud</span></td>
   </tr>
   <tr>
     <td class="tg-3sds">Organización</td>
